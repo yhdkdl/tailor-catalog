@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Tailor, TailorStatus } from '@tailor-catalog/shared';
 import { TailorActionButtons } from './TailorActionButtons';
 import { TailorDetailModal } from './TailorDetailModal';
+import { deleteTailorByAdmin } from '@/app/admin/actions';
 import {
   Search,
   Users,
@@ -18,6 +21,10 @@ import {
   Calendar,
   Filter,
   ArrowUpDown,
+  UserPlus,
+  Trash2,
+  AlertTriangle,
+  Loader2,
 } from 'lucide-react';
 
 interface TailorWithStats extends Tailor {
@@ -33,27 +40,39 @@ export function TailorsTableClient({
   initialTailors,
   initialStatusFilter = 'all',
 }: TailorsTableClientProps) {
+  const router = useRouter();
+  const [tailorsList, setTailorsList] = useState<TailorWithStats[]>(initialTailors);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>(initialStatusFilter);
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name'>('newest');
   const [selectedTailor, setSelectedTailor] = useState<TailorWithStats | null>(null);
 
+  // Quick deletion modal state
+  const [tailorToDelete, setTailorToDelete] = useState<TailorWithStats | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Update list when prop changes
+  React.useEffect(() => {
+    setTailorsList(initialTailors);
+  }, [initialTailors]);
+
   // Status counts
   const counts = useMemo(() => {
-    const pending = initialTailors.filter((t) => t.status === 'pending').length;
-    const approved = initialTailors.filter((t) => t.status === 'approved').length;
-    const rejected = initialTailors.filter((t) => t.status === 'rejected').length;
+    const pending = tailorsList.filter((t) => t.status === 'pending').length;
+    const approved = tailorsList.filter((t) => t.status === 'approved').length;
+    const rejected = tailorsList.filter((t) => t.status === 'rejected').length;
     return {
-      all: initialTailors.length,
+      all: tailorsList.length,
       pending,
       approved,
       rejected,
     };
-  }, [initialTailors]);
+  }, [tailorsList]);
 
   // Filtered & sorted tailors
   const filteredTailors = useMemo(() => {
-    return initialTailors
+    return tailorsList
       .filter((tailor) => {
         // Status filter
         if (selectedStatus !== 'all' && tailor.status !== selectedStatus) {
@@ -84,7 +103,28 @@ export function TailorsTableClient({
         }
         return 0;
       });
-  }, [initialTailors, selectedStatus, searchQuery, sortBy]);
+  }, [tailorsList, selectedStatus, searchQuery, sortBy]);
+
+  const handleConfirmDelete = async () => {
+    if (!tailorToDelete) return;
+    setDeleting(true);
+    setDeleteError(null);
+
+    try {
+      const res = await deleteTailorByAdmin(tailorToDelete.id);
+      if (res.success) {
+        setTailorsList((prev) => prev.filter((t) => t.id !== tailorToDelete.id));
+        setTailorToDelete(null);
+        router.refresh();
+      } else {
+        setDeleteError(res.error || 'Failed to delete tailor.');
+      }
+    } catch (err: any) {
+      setDeleteError(err.message || 'An error occurred during deletion.');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const statusBadge = (status: TailorStatus) => {
     switch (status) {
@@ -114,8 +154,8 @@ export function TailorsTableClient({
 
   return (
     <div className="space-y-6">
-      {/* Header Controls: Filters & Search */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header Action & Quick Link */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         {/* Status Filter Tabs */}
         <div className="flex items-center gap-1.5 p-1.5 bg-surface-900/90 rounded-2xl border border-slate-800/80 overflow-x-auto">
           <button
@@ -179,31 +219,41 @@ export function TailorsTableClient({
           </button>
         </div>
 
-        {/* Search & Sort */}
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1 sm:w-72">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search shop, email, phone, slug..."
-              className="w-full pl-10 pr-4 py-2 bg-surface-900/90 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all"
-            />
-          </div>
+        {/* Register New Tailor Button */}
+        <Link
+          id="add-tailor-btn"
+          href="/admin/tailors/new"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-lg shadow-brand-600/20 transition flex-shrink-0"
+        >
+          <UserPlus className="w-4 h-4" />
+          <span>Register New Tailor</span>
+        </Link>
+      </div>
 
-          <div className="relative flex-shrink-0">
-            <select
-              value={sortBy}
-              onChange={(e: any) => setSortBy(e.target.value)}
-              className="px-3 py-2 bg-surface-900/90 border border-slate-700/80 rounded-xl text-slate-300 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/50 appearance-none cursor-pointer pr-8"
-            >
-              <option value="newest">Sort: Newest First</option>
-              <option value="oldest">Sort: Oldest First</option>
-              <option value="name">Sort: Shop Name (A-Z)</option>
-            </select>
-            <ArrowUpDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-          </div>
+      {/* Search & Sort Controls */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="relative w-full sm:w-80">
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search shop, email, phone, slug..."
+            className="w-full pl-10 pr-4 py-2 bg-surface-900/90 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition"
+          />
+        </div>
+
+        <div className="relative flex-shrink-0 w-full sm:w-auto">
+          <select
+            value={sortBy}
+            onChange={(e: any) => setSortBy(e.target.value)}
+            className="w-full sm:w-auto px-3 py-2 bg-surface-900/90 border border-slate-700/80 rounded-xl text-slate-300 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/50 appearance-none cursor-pointer pr-8"
+          >
+            <option value="newest">Sort: Newest First</option>
+            <option value="oldest">Sort: Oldest First</option>
+            <option value="name">Sort: Shop Name (A-Z)</option>
+          </select>
+          <ArrowUpDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
         </div>
       </div>
 
@@ -299,6 +349,15 @@ export function TailorsTableClient({
                           shopName={tailor.shop_name}
                           compact
                         />
+
+                        <button
+                          id={`table-delete-tailor-${tailor.id}`}
+                          onClick={() => setTailorToDelete(tailor)}
+                          className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition"
+                          title="Delete Tailor"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -346,13 +405,23 @@ export function TailorsTableClient({
                 </div>
 
                 <div className="flex items-center justify-between gap-2 pt-2">
-                  <button
-                    onClick={() => setSelectedTailor(tailor)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-900 border border-slate-800 text-slate-300 text-xs font-medium hover:bg-slate-800 transition"
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>View Profile</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setSelectedTailor(tailor)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-900 border border-slate-800 text-slate-300 text-xs font-medium hover:bg-slate-800 transition"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>View Profile</span>
+                    </button>
+
+                    <button
+                      onClick={() => setTailorToDelete(tailor)}
+                      className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition"
+                      title="Delete Tailor"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
 
                   <TailorActionButtons
                     tailorId={tailor.id}
@@ -372,7 +441,70 @@ export function TailorsTableClient({
         tailor={selectedTailor}
         isOpen={!!selectedTailor}
         onClose={() => setSelectedTailor(null)}
+        onDeleted={(deletedId) => {
+          setTailorsList((prev) => prev.filter((t) => t.id !== deletedId));
+          setSelectedTailor(null);
+        }}
       />
+
+      {/* Quick Delete Confirmation Modal */}
+      {tailorToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="glass-panel w-full max-w-md rounded-3xl p-6 sm:p-8 border border-rose-500/40 shadow-2xl space-y-5">
+            <div className="flex items-center gap-3 text-rose-400">
+              <div className="w-10 h-10 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Delete Tailor Account?</h3>
+                <p className="text-xs text-slate-400">{tailorToDelete.shop_name}</p>
+              </div>
+            </div>
+
+            {deleteError && (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
+                {deleteError}
+              </div>
+            )}
+
+            <div className="p-4 rounded-2xl bg-surface-900 border border-slate-800 space-y-2 text-xs text-slate-300">
+              <p className="font-semibold text-rose-300">This permanent action will:</p>
+              <ul className="list-disc list-inside space-y-1 text-slate-400">
+                <li>Delete all photo files from Supabase storage</li>
+                <li>Delete all design records from the catalog</li>
+                <li>Delete the tailor profile ({tailorToDelete.email})</li>
+                <li>Delete the Supabase Auth user credentials</li>
+              </ul>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                id="confirm-quick-delete-tailor"
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5 disabled:opacity-50"
+              >
+                {deleting ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5" />
+                )}
+                <span>Delete Permanently</span>
+              </button>
+              <button
+                onClick={() => {
+                  setTailorToDelete(null);
+                  setDeleteError(null);
+                }}
+                disabled={deleting}
+                className="py-2.5 px-4 rounded-xl bg-surface-800 hover:bg-surface-700 text-slate-300 text-xs font-semibold transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -42,7 +42,14 @@ export default async function AdminDashboardPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/admin/tailors/new"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-forest-600 hover:bg-forest-500 text-white text-sm font-medium transition shadow-lg shadow-forest-600/20"
+            >
+              <Store className="w-4 h-4" />
+              <span>Register Tailor</span>
+            </Link>
             <Link
               href="/admin/tailors?status=pending"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium transition shadow-lg shadow-brand-600/20"
