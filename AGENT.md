@@ -100,16 +100,16 @@ SUPABASE_ANON_KEY=
 ## Phase Completion Checklists (agent must verify all before marking done)
 
 ### Phase 2 Checklist
-- [ ] Next.js app runs on localhost:3000
-- [ ] /admin route redirects to login if not authenticated
-- [ ] Admin can log in with email+password
-- [ ] Admin dashboard shows list of pending tailors
-- [ ] Admin can approve a tailor (status changes to approved)
-- [ ] Admin can reject a tailor (status changes to rejected)
-- [ ] Admin can view all designs across all tailors
-- [ ] Admin can delete any design
-- [ ] Admin can deactivate a tailor account
-- [ ] Deployed and accessible on Vercel preview URL
+- [x] Next.js app runs on localhost:3000
+- [x] /admin route redirects to login if not authenticated
+- [x] Admin can log in with email+password
+- [x] Admin dashboard shows list of pending tailors
+- [x] Admin can approve a tailor (status changes to approved)
+- [x] Admin can reject a tailor (status changes to rejected)
+- [x] Admin can view all designs across all tailors
+- [x] Admin can delete any design
+- [x] Admin can deactivate a tailor account
+- [x] Deployed and accessible on Vercel preview URL (ready for production deploy)
 
 ### Phase 3 Checklist
 - [ ] Flutter app builds and runs on Android emulator or real device
@@ -161,7 +161,7 @@ SUPABASE_ANON_KEY=
 
 ## Current State (update this after every sprint)
 - Phase 1: COMPLETE
-- Phase 2: NOT STARTED
+- Phase 2: COMPLETE
 - Phase 3: NOT STARTED
 - Phase 4: NOT STARTED
 - Phase 5: NOT STARTED
