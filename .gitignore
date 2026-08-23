@@ -24,6 +24,9 @@ apps/mobile/.packages
 .env.development
 .env.production
 .env*.local
+**/.env
+**/.env.local
+**/.env*.local
 
 # ── OS Files ──────────────────────────────
 .DS_Store
