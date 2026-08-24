@@ -110,7 +110,10 @@ SUPABASE_ANON_KEY=
 6. Always push the feature branch to GitHub after completing a sprint
 7. Merge into develop only — never into main
 8. If uncertain about a decision ask before proceeding
-9. Follow the storage path convention: {authUid}/{designId}/{filename}
+9. Design photos go to Cloudinary — never Supabase Storage
+   Store only cloudinary_public_id in the database
+   Build all image URLs using cloudinaryPresets from shared package
+   QR codes still go to Supabase Storage bucket: qr-codes
 10. All UI text must use i18n keys — never hardcode English strings in Phase 4+
 
 ## Phase Completion Checklists (agent must verify all before marking done)
@@ -122,6 +125,8 @@ SUPABASE_ANON_KEY=
 - [x] Admin dashboard shows list of pending tailors
 - [x] Admin can approve a tailor (status changes to approved)
 - [x] Admin can reject a tailor (status changes to rejected)
+- [x] Admin can create tailor accounts directly from panel
+- [x] Admin can fully delete a tailor (auth + profile + designs + photos)
 - [x] Admin can view all designs across all tailors
 - [x] Admin can delete any design
 - [x] Admin can deactivate a tailor account
