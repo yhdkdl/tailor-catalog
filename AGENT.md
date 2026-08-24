@@ -21,9 +21,25 @@
 ## Categories Already Seeded (6 rows, all 4 languages)
 Women's Dress, Men's Suit, Traditional Attire, Children's Wear, Casual, Formal
 
-## Storage Buckets (both public)
-- design-photos → stores all design images
-- qr-codes → stores generated QR code images
+## Storage Architecture
+### Cloudinary (design photos)
+- All design photos uploaded directly from Flutter to Cloudinary
+- Upload preset: tailor-designs (unsigned, allows direct upload)
+- Folder structure: tailor-designs/{authUid}/{designId}/
+- Public IDs stored in design_photos.cloudinary_public_id
+- Use cloudinaryPresets helpers from @tailor-catalog/shared for all URLs
+- Never store full URLs — always store public_id and build URL at runtime
+
+### Supabase Storage (QR codes only)
+- Bucket: qr-codes (public)
+- Path: {authUid}/{shopSlug}-qr.png
+- QR codes are tiny — Supabase 1GB is more than enough
+
+## Cloudinary Environment Variables
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME (used in web + referenced in mobile)
+CLOUDINARY_API_KEY (server side only)
+CLOUDINARY_API_SECRET (server side only — never expose)
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=tailor-designs
 
 ## Branch Strategy (NEVER break these rules)
 - main = production only, never commit directly
