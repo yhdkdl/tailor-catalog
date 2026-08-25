@@ -183,6 +183,6 @@ SUPABASE_ANON_KEY=
 ## Current State (update this after every sprint)
 - Phase 1: COMPLETE
 - Phase 2: COMPLETE
-- Phase 3: IN PROGRESS (Sprint 7 complete)
+- Phase 3: IN PROGRESS (Sprints 7-8 complete; Sprint 8 needs human Supabase/device verification)
 - Phase 4: NOT STARTED
 - Phase 5: NOT STARTED
