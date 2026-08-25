@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/config/app_config.dart';
 import 'core/theme/app_theme.dart';
-import 'features/bootstrap/bootstrap_screen.dart';
+import 'features/auth/auth_repository.dart';
+import 'features/auth/auth_screen.dart';
+import 'features/auth/profile_gate.dart';
 
 class TailorApp extends StatelessWidget {
   const TailorApp({super.key});
@@ -12,7 +16,9 @@ class TailorApp extends StatelessWidget {
       title: 'Tailor Catalog',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
-      home: const BootstrapScreen(),
+      home: AppConfig.hasSupabase
+          ? ProfileGate(repository: SupabaseAuthRepository(Supabase.instance.client))
+          : const AuthScreen(repository: UnconfiguredAuthRepository()),
     );
   }
 }
