@@ -10,6 +10,8 @@ A QR-based fashion design catalog platform for local tailor businesses.
 | `apps/mobile` | Flutter | Tailor app (iOS + Android) |
 | `packages/shared` | TypeScript | Shared types |
 
+See `apps/mobile/README.md` for Flutter run instructions (`flutter run --dart-define-from-file=dart_defines.json`).
+
 ## Languages Supported
 - English (en)
 - Amharic / አማርኛ (am)
