@@ -45,7 +45,11 @@ class SupabaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> sendOtp(String email) async {
-    await client.auth.signInWithOtp(email: email, shouldCreateUser: false);
+    await client.auth.signInWithOtp(
+      email: email,
+      shouldCreateUser: false,
+      emailRedirectTo: null,
+    );
   }
 
   @override
