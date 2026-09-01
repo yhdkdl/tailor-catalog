@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../auth/auth_repository.dart';
+import '../offline/offline_service.dart';
+import '../offline/offline_sync_manager.dart';
 import '../upload/bulk_upload_screen.dart';
 import '../upload/single_upload_screen.dart';
 import 'design_repository.dart';
@@ -12,12 +14,14 @@ class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
     required this.profile,
     required this.designRepository,
+    this.syncManager,
     required this.onSignOut,
     super.key,
   });
 
   final TailorProfile profile;
   final DesignRepository designRepository;
+  final OfflineSyncManager? syncManager;
   final Future<void> Function() onSignOut;
 
   @override
@@ -25,14 +29,27 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  late final OfflineSyncManager _syncManager;
   List<DesignItem> _designs = [];
+  List<QueuedUploadItem> _pendingQueue = [];
   bool _loading = true;
+  bool _isSyncing = false;
   String? _error;
 
   @override
   void initState() {
     super.initState();
+    _syncManager = widget.syncManager ??
+        OfflineSyncManager(designRepository: widget.designRepository);
     _loadDesigns();
+  }
+
+  @override
+  void dispose() {
+    if (widget.syncManager == null) {
+      _syncManager.dispose();
+    }
+    super.dispose();
   }
 
   Future<void> _loadDesigns() async {
@@ -42,10 +59,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
 
     try {
-      final list = await widget.designRepository.getTailorDesigns(widget.profile.id);
+      final list = await _syncManager.getTailorDesigns(widget.profile.id);
+      final queue = await _syncManager.getPendingUploads();
       if (mounted) {
         setState(() {
           _designs = list;
+          _pendingQueue = queue;
           _loading = false;
         });
       }
@@ -56,6 +75,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _error = e.toString().replaceFirst('Exception: ', '');
         });
       }
+    }
+  }
+
+  Future<void> _syncPendingUploads() async {
+    setState(() => _isSyncing = true);
+    final res = await _syncManager.processQueue();
+    if (mounted) {
+      setState(() => _isSyncing = false);
+      if (res.succeededCount > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Successfully synced ${res.succeededCount} queued design(s)!'), backgroundColor: Colors.green),
+        );
+      }
+      _loadDesigns();
     }
   }
 
@@ -223,6 +256,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildBody() {
+    return Column(
+      children: [
+        if (_pendingQueue.isNotEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            color: Colors.amber.shade900.withValues(alpha: 0.25),
+            child: Row(
+              children: [
+                const Icon(Icons.cloud_queue, size: 20, color: Colors.amberAccent),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '${_pendingQueue.length} upload(s) pending in offline queue.',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.amberAccent),
+                  ),
+                ),
+                _isSyncing
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.amberAccent),
+                      )
+                    : TextButton(
+                        onPressed: _syncPendingUploads,
+                        child: const Text('Sync now', style: TextStyle(fontSize: 12, color: Colors.amberAccent)),
+                      ),
+              ],
+            ),
+          ),
+        Expanded(
+          child: _buildContent(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContent() {
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
