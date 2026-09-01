@@ -17,6 +17,26 @@ abstract interface class DesignRepository {
     required String filename,
     required String authUid,
   });
+  Future<DesignItem> createGroupedDesign({
+    required String tailorId,
+    required String categoryId,
+    required double price,
+    String? tag,
+    required List<Uint8List> imageBytesList,
+    required List<String> filenames,
+    required String authUid,
+    void Function(int current, int total)? onProgress,
+  });
+  Future<List<DesignItem>> createBulkIndividualDesigns({
+    required String tailorId,
+    required String categoryId,
+    required double price,
+    String? tag,
+    required List<Uint8List> imageBytesList,
+    required List<String> filenames,
+    required String authUid,
+    void Function(int current, int total)? onProgress,
+  });
   Future<void> deleteDesign(String designId);
 }
 
@@ -114,6 +134,107 @@ class SupabaseDesignRepository implements DesignRepository {
   }
 
   @override
+  Future<DesignItem> createGroupedDesign({
+    required String tailorId,
+    required String categoryId,
+    required double price,
+    String? tag,
+    required List<Uint8List> imageBytesList,
+    required List<String> filenames,
+    required String authUid,
+    void Function(int current, int total)? onProgress,
+  }) async {
+    final designId = _uuid.v4();
+
+    // 1. Insert grouped design record in Supabase
+    final designData = await client
+        .from('designs')
+        .insert({
+          'id': designId,
+          'tailor_id': tailorId,
+          'category_id': categoryId,
+          'price': price,
+          'tag': tag?.trim().isNotEmpty == true ? tag!.trim() : null,
+          'is_grouped': true,
+        })
+        .select()
+        .single();
+
+    final createdPhotos = <DesignPhotoItem>[];
+
+    // 2. Upload each photo & insert design_photo records
+    for (var i = 0; i < imageBytesList.length; i++) {
+      final bytes = imageBytesList[i];
+      final fname = filenames.length > i ? filenames[i] : 'photo_$i.jpg';
+
+      final uploadResult = await _cloudinaryService.uploadImage(
+        imageBytes: bytes,
+        filename: fname,
+        authUid: authUid,
+        designId: designId,
+      );
+
+      final photoData = await client
+          .from('design_photos')
+          .insert({
+            'design_id': designId,
+            'cloudinary_public_id': uploadResult.publicId,
+            'cloudinary_url': uploadResult.secureUrl,
+            'order_index': i,
+          })
+          .select()
+          .single();
+
+      createdPhotos.add(DesignPhotoItem.fromJson(photoData));
+      onProgress?.call(i + 1, imageBytesList.length);
+    }
+
+    return DesignItem(
+      id: designData['id'] as String,
+      tailorId: designData['tailor_id'] as String,
+      categoryId: designData['category_id'] as String,
+      price: (designData['price'] as num?)?.toDouble() ?? price,
+      tag: designData['tag'] as String?,
+      isGrouped: true,
+      photos: createdPhotos,
+    );
+  }
+
+  @override
+  Future<List<DesignItem>> createBulkIndividualDesigns({
+    required String tailorId,
+    required String categoryId,
+    required double price,
+    String? tag,
+    required List<Uint8List> imageBytesList,
+    required List<String> filenames,
+    required String authUid,
+    void Function(int current, int total)? onProgress,
+  }) async {
+    final createdDesigns = <DesignItem>[];
+
+    for (var i = 0; i < imageBytesList.length; i++) {
+      final bytes = imageBytesList[i];
+      final fname = filenames.length > i ? filenames[i] : 'design_$i.jpg';
+
+      final design = await createSingleDesign(
+        tailorId: tailorId,
+        categoryId: categoryId,
+        price: price,
+        tag: tag,
+        imageBytes: bytes,
+        filename: fname,
+        authUid: authUid,
+      );
+
+      createdDesigns.add(design);
+      onProgress?.call(i + 1, imageBytesList.length);
+    }
+
+    return createdDesigns;
+  }
+
+  @override
   Future<void> deleteDesign(String designId) async {
     await client.from('designs').delete().eq('id', designId);
   }
@@ -137,6 +258,32 @@ class UnconfiguredDesignRepository implements DesignRepository {
     required Uint8List imageBytes,
     required String filename,
     required String authUid,
+  }) async =>
+      throw Exception('Supabase is not configured.');
+
+  @override
+  Future<DesignItem> createGroupedDesign({
+    required String tailorId,
+    required String categoryId,
+    required double price,
+    String? tag,
+    required List<Uint8List> imageBytesList,
+    required List<String> filenames,
+    required String authUid,
+    void Function(int current, int total)? onProgress,
+  }) async =>
+      throw Exception('Supabase is not configured.');
+
+  @override
+  Future<List<DesignItem>> createBulkIndividualDesigns({
+    required String tailorId,
+    required String categoryId,
+    required double price,
+    String? tag,
+    required List<Uint8List> imageBytesList,
+    required List<String> filenames,
+    required String authUid,
+    void Function(int current, int total)? onProgress,
   }) async =>
       throw Exception('Supabase is not configured.');
 

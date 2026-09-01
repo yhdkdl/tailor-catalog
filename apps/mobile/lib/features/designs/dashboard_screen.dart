@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../auth/auth_repository.dart';
+import '../upload/bulk_upload_screen.dart';
 import '../upload/single_upload_screen.dart';
 import 'design_repository.dart';
 import 'models.dart';
@@ -100,7 +101,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Future<void> _navigateToUpload() async {
+  void _showUploadOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.add_photo_alternate_outlined, color: AppColors.brand),
+              title: const Text('Single Photo Design', style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: const Text('Upload one photo with price and category'),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                _navigateToSingleUpload();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined, color: AppColors.brand),
+              title: const Text('Bulk & Multi-Photo Upload', style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: const Text('Upload multiple photos or a grouped carousel'),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                _navigateToBulkUpload();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _navigateToSingleUpload() async {
     final created = await Navigator.of(context).push<DesignItem>(
       MaterialPageRoute(
         builder: (_) => SingleDesignUploadScreen(
@@ -112,6 +147,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
 
     if (created != null) {
+      _loadDesigns();
+    }
+  }
+
+  Future<void> _navigateToBulkUpload() async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => BulkUploadScreen(
+          tailorProfile: widget.profile,
+          designRepository: widget.designRepository,
+          authUid: widget.profile.authId,
+        ),
+      ),
+    );
+
+    if (result == true) {
       _loadDesigns();
     }
   }
@@ -163,7 +214,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('upload_fab'),
-        onPressed: _navigateToUpload,
+        onPressed: _showUploadOptions,
         backgroundColor: AppColors.brand,
         icon: const Icon(Icons.add_photo_alternate_outlined),
         label: const Text('Upload Design', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -225,7 +276,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 24),
               FilledButton.icon(
-                onPressed: _navigateToUpload,
+                onPressed: _showUploadOptions,
                 icon: const Icon(Icons.add),
                 label: const Text('Upload First Design'),
               ),
@@ -302,6 +353,34 @@ class _DesignCard extends StatelessWidget {
                         color: Colors.black26,
                         child: const Icon(Icons.image_outlined, color: Colors.grey),
                       ),
+                // Multi-photo indicator badge
+                if (design.photos.length > 1)
+                  Positioned(
+                    top: 6,
+                    left: 6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.black87,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.collections_outlined, size: 12, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${design.photos.length}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 // Delete button
                 Positioned(
                   top: 6,

@@ -91,6 +91,51 @@ class FakeDesignRepository implements DesignRepository {
   }
 
   @override
+  Future<DesignItem> createGroupedDesign({
+    required String tailorId,
+    required String categoryId,
+    required double price,
+    String? tag,
+    required List<Uint8List> imageBytesList,
+    required List<String> filenames,
+    required String authUid,
+    void Function(int current, int total)? onProgress,
+  }) async {
+    return createSingleDesign(
+      tailorId: tailorId,
+      categoryId: categoryId,
+      price: price,
+      tag: tag,
+      imageBytes: imageBytesList.first,
+      filename: filenames.first,
+      authUid: authUid,
+    );
+  }
+
+  @override
+  Future<List<DesignItem>> createBulkIndividualDesigns({
+    required String tailorId,
+    required String categoryId,
+    required double price,
+    String? tag,
+    required List<Uint8List> imageBytesList,
+    required List<String> filenames,
+    required String authUid,
+    void Function(int current, int total)? onProgress,
+  }) async {
+    final d = await createSingleDesign(
+      tailorId: tailorId,
+      categoryId: categoryId,
+      price: price,
+      tag: tag,
+      imageBytes: imageBytesList.first,
+      filename: filenames.first,
+      authUid: authUid,
+    );
+    return [d];
+  }
+
+  @override
   Future<void> deleteDesign(String designId) async {
     deleteDesignCallCount++;
     designs.removeWhere((d) => d.id == designId);
