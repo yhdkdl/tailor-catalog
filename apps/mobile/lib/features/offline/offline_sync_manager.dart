@@ -21,12 +21,12 @@ class OfflineSyncManager {
   OfflineSyncManager({
     required this.designRepository,
     OfflineStorage? storage,
-    Connectivity? connectivity,
+    this._connectivity,
     bool listenConnectivity = true,
-  })  : _storage = storage ?? InMemoryOfflineStorage(),
-        _connectivity = connectivity {
-    if (listenConnectivity && _connectivity != null) {
-      _subscription = _connectivity!.onConnectivityChanged.listen((results) {
+  })  : _storage = storage ?? InMemoryOfflineStorage() {
+    final c = _connectivity;
+    if (listenConnectivity && c != null) {
+      _subscription = c.onConnectivityChanged.listen((results) {
         final isOnline = results.any((r) => r != ConnectivityResult.none);
         if (isOnline) {
           processQueue();
@@ -48,7 +48,7 @@ class OfflineSyncManager {
   Future<bool> isConnected() async {
     if (_connectivity == null) return true;
     try {
-      final results = await _connectivity!.checkConnectivity();
+      final results = await _connectivity.checkConnectivity();
       return results.any((r) => r != ConnectivityResult.none);
     } catch (_) {
       return true;
