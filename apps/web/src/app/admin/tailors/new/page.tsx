@@ -54,8 +54,8 @@ export default function NewTailorPage() {
         password,
       });
 
-      if (!res.success) {
-        setErrorMessage(res.error || 'Failed to register tailor.');
+      if (!res || !res.success) {
+        setErrorMessage(res?.error || 'Failed to register tailor. Please check server configuration.');
         setLoading(false);
         return;
       }
@@ -63,7 +63,7 @@ export default function NewTailorPage() {
       setCreatedTailor(res.tailor);
       setLoading(false);
     } catch (err: any) {
-      setErrorMessage(err.message || 'An unexpected error occurred.');
+      setErrorMessage(err?.message || 'An unexpected error occurred.');
       setLoading(false);
     }
   };
