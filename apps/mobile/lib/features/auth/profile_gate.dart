@@ -2,13 +2,20 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../designs/dashboard_screen.dart';
+import '../designs/design_repository.dart';
 import 'auth_repository.dart';
 import 'auth_screen.dart';
 
 class ProfileGate extends StatefulWidget {
-  const ProfileGate({required this.repository, super.key});
+  const ProfileGate({
+    required this.repository,
+    this.designRepository,
+    super.key,
+  });
 
   final AuthRepository repository;
+  final DesignRepository? designRepository;
 
   @override
   State<ProfileGate> createState() => _ProfileGateState();
@@ -109,7 +116,15 @@ class _ProfileGateState extends State<ProfileGate> {
       case 'rejected':
         return _RejectedScreen(onSignOut: widget.repository.signOut);
       case 'approved':
-        return _DashboardScreen(shopName: profile!.shopName, onSignOut: widget.repository.signOut);
+        final repo = widget.designRepository ??
+            (widget.repository is SupabaseAuthRepository
+                ? SupabaseDesignRepository(client: (widget.repository as SupabaseAuthRepository).client)
+                : const UnconfiguredDesignRepository());
+        return DashboardScreen(
+          profile: profile!,
+          designRepository: repo,
+          onSignOut: widget.repository.signOut,
+        );
       default:
         return Scaffold(body: Center(child: Text('Unknown account status: ${profile!.status}')));
     }
@@ -201,30 +216,6 @@ class _RejectedScreen extends StatelessWidget {
               TextButton(onPressed: onSignOut, child: const Text('Sign out')),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DashboardScreen extends StatelessWidget {
-  const _DashboardScreen({required this.shopName, required this.onSignOut});
-
-  final String shopName;
-  final Future<void> Function() onSignOut;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(actions: [TextButton(onPressed: onSignOut, child: const Text('Sign out'))]),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Text('Welcome $shopName', style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            const Chip(label: Text('Approved')),
-          ]),
         ),
       ),
     );

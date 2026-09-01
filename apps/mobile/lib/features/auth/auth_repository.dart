@@ -2,12 +2,16 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class TailorProfile {
   const TailorProfile({
+    this.id = '',
+    this.authId = '',
     required this.shopName,
     required this.shopSlug,
     required this.status,
     required this.email,
   });
 
+  final String id;
+  final String authId;
   final String shopName;
   final String shopSlug;
   final String status;
@@ -15,6 +19,8 @@ class TailorProfile {
 
   factory TailorProfile.fromJson(Map<String, dynamic> json) {
     return TailorProfile(
+      id: json['id'] as String? ?? '',
+      authId: json['auth_id'] as String? ?? '',
       shopName: json['shop_name'] as String? ?? 'Your shop',
       shopSlug: json['shop_slug'] as String? ?? '',
       status: json['status'] as String? ?? 'pending',

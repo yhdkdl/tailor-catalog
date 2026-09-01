@@ -199,11 +199,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Screen 4: Main dashboard displayed
-      expect(find.text('Welcome Addis Elegance'), findsOneWidget);
+      expect(find.text('Addis Elegance'), findsOneWidget);
       expect(find.text('Approved'), findsOneWidget);
 
       // Sign out from dashboard
-      await tester.tap(find.text('Sign out'));
+      await tester.tap(find.byIcon(Icons.logout_outlined));
       await tester.pumpAndSettle();
 
       // Back to login screen
@@ -281,7 +281,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Directly routes to dashboard without showing login screen
-      expect(find.text('Welcome Pre-authenticated Tailor'), findsOneWidget);
+      expect(find.text('Pre-authenticated Tailor'), findsOneWidget);
       expect(find.text('Approved'), findsOneWidget);
       expect(find.text('Tailor sign in'), findsNothing);
     });

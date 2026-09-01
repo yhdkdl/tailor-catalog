@@ -1,0 +1,363 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+
+import '../../core/theme/app_theme.dart';
+import '../auth/auth_repository.dart';
+import '../upload/single_upload_screen.dart';
+import 'design_repository.dart';
+import 'models.dart';
+
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({
+    required this.profile,
+    required this.designRepository,
+    required this.onSignOut,
+    super.key,
+  });
+
+  final TailorProfile profile;
+  final DesignRepository designRepository;
+  final Future<void> Function() onSignOut;
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  List<DesignItem> _designs = [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDesigns();
+  }
+
+  Future<void> _loadDesigns() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final list = await widget.designRepository.getTailorDesigns(widget.profile.id);
+      if (mounted) {
+        setState(() {
+          _designs = list;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = e.toString().replaceFirst('Exception: ', '');
+        });
+      }
+    }
+  }
+
+  Future<void> _deleteDesign(DesignItem design) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Delete Design'),
+        content: const Text('Are you sure you want to remove this design from your catalog?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await widget.designRepository.deleteDesign(design.id);
+        setState(() {
+          _designs.removeWhere((d) => d.id == design.id);
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Design removed')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to delete design: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _navigateToUpload() async {
+    final created = await Navigator.of(context).push<DesignItem>(
+      MaterialPageRoute(
+        builder: (_) => SingleDesignUploadScreen(
+          tailorProfile: widget.profile,
+          designRepository: widget.designRepository,
+          authUid: widget.profile.authId,
+        ),
+      ),
+    );
+
+    if (created != null) {
+      _loadDesigns();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.profile.shopName,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.green.withValues(alpha: 0.4)),
+                    ),
+                    child: const Text(
+                      'Approved',
+                      style: TextStyle(fontSize: 10, color: Colors.greenAccent, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout_outlined),
+            tooltip: 'Sign out',
+            onPressed: widget.onSignOut,
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: _loadDesigns,
+        child: _buildBody(),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        key: const Key('upload_fab'),
+        onPressed: _navigateToUpload,
+        backgroundColor: AppColors.brand,
+        icon: const Icon(Icons.add_photo_alternate_outlined),
+        label: const Text('Upload Design', style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.cloud_off_outlined, size: 48, color: Colors.redAccent),
+              const SizedBox(height: 16),
+              Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.redAccent)),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: _loadDesigns,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Try Again'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_designs.isEmpty) {
+      return Center(
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: const Icon(Icons.checkroom_outlined, size: 56, color: AppColors.brand),
+              ),
+              const SizedBox(height: 20),
+              Text('Your catalog is empty', style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 8),
+              const Text(
+                'Upload photos of your tailoring work with prices and categories to showcase them to customers.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: _navigateToUpload,
+                icon: const Icon(Icons.add),
+                label: const Text('Upload First Design'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.68,
+        crossAxisSpacing: 14,
+        mainAxisSpacing: 14,
+      ),
+      itemCount: _designs.length,
+      itemBuilder: (context, index) {
+        final design = _designs[index];
+        return _DesignCard(
+          design: design,
+          onDelete: () => _deleteDesign(design),
+        );
+      },
+    );
+  }
+}
+
+class _DesignCard extends StatelessWidget {
+  const _DesignCard({
+    required this.design,
+    required this.onDelete,
+  });
+
+  final DesignItem design;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final photo = design.photos.isNotEmpty ? design.photos.first : null;
+    final imageUrl = photo != null
+        ? (photo.thumbnailOptimizedUrl.isNotEmpty ? photo.thumbnailOptimizedUrl : photo.cloudinaryUrl)
+        : '';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white12),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Image preview container
+          Expanded(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                imageUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (ctx, url) => Container(
+                          color: Colors.black26,
+                          child: const Icon(Icons.image_outlined, color: Colors.white24),
+                        ),
+                        errorWidget: (ctx, url, err) => const Center(
+                          child: Icon(Icons.broken_image_outlined, color: Colors.grey),
+                        ),
+                      )
+                    : Container(
+                        color: Colors.black26,
+                        child: const Icon(Icons.image_outlined, color: Colors.grey),
+                      ),
+                // Delete button
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: CircleAvatar(
+                    radius: 15,
+                    backgroundColor: Colors.black54,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(Icons.delete_outline, size: 16, color: Colors.white),
+                      onPressed: onDelete,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Details
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'ETB ${design.price.toStringAsFixed(0)}',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.brand),
+                ),
+                const SizedBox(height: 2),
+                if (design.categoryName != null && design.categoryName!.isNotEmpty)
+                  Text(
+                    design.categoryName!,
+                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                if (design.tag != null && design.tag!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.white10,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '#${design.tag}',
+                      style: const TextStyle(fontSize: 10, color: Colors.white70),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
