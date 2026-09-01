@@ -1,7 +1,7 @@
 
 ## Key Decisions Already Made
-1. Auth: Email OTP (no password) for tailors. Email+password for admin.
-   - Will migrate to Africa's Talking SMS OTP after MVP
+1. Auth: Email + password for tailors. Admin sets initial password on account creation.
+   Email+password for admin.
 2. Bulk upload: each photo = its own design card by default
    OR tailor groups multiple photos into one multi-photo design (carousel)
 3. Design fields: category + price + optional tag (no name, no description)
@@ -10,6 +10,16 @@
 5. Tailor approval: admin manually approves each tailor
 6. Storage paths: {authUid}/{designId}/{filename} for design photos
 7. Hosting: Vercel (web) + Supabase (backend). No Railway needed.
+
+## Auth flow for tailors
+- Email + password (no OTP)
+- Admin creates tailor account with initial password
+- Admin shares credentials manually with tailor
+- `email_confirm: true` set on creation so no email verification needed
+- Session persists across app restarts
+- Pending tailors see waiting screen
+- Approved tailors reach main dashboard
+- Rejected tailors see rejection screen
 
 ## Database Tables (all created in Supabase)
 - tailors (id, auth_id, shop_name, shop_slug, email, status, phone, created_at, updated_at)
@@ -81,7 +91,7 @@ SUPABASE_ANON_KEY=
 
 ### Phase 3 — Flutter Tailor App
 - Sprint 7: Flutter bootstrap ✓
-- Sprint 8: Tailor auth + profile (email OTP login)
+- Sprint 8: Tailor auth + profile (email+password login)
 - Sprint 9: Single design upload
 - Sprint 10: Bulk upload + multi-photo designs
 - Sprint 11: Offline support (Drift/SQLite)
@@ -134,8 +144,8 @@ SUPABASE_ANON_KEY=
 
 ### Phase 3 Checklist
 - [ ] Flutter app builds and runs on Android emulator or real device
-- [ ] Tailor can enter email and receive OTP
-- [ ] Tailor can enter OTP and log in successfully
+- [ ] Tailor can enter email + password and log in successfully
+- [ ] Wrong credentials show a clear error message
 - [ ] Pending tailors see a waiting for approval screen
 - [ ] Approved tailors reach the main dashboard
 - [ ] Tailor can upload a single design photo with category + price + optional tag

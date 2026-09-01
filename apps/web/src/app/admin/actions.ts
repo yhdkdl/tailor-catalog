@@ -39,18 +39,23 @@ export async function createTailorByAdmin(data: {
   shopName: string;
   email: string;
   phone?: string;
+  password: string;
 }) {
   try {
     const supabase = createAdminClient();
     const email = data.email.trim().toLowerCase();
     const shopName = data.shopName.trim();
     const phone = data.phone?.trim() || null;
+    const password = data.password;
 
     if (!shopName) {
       return { success: false, error: 'Shop name is required.' };
     }
     if (!email) {
       return { success: false, error: 'Email address is required.' };
+    }
+    if (!password || password.length < 8) {
+      return { success: false, error: 'Password must be at least 8 characters.' };
     }
 
     // Check if email already exists in tailors table
@@ -65,8 +70,9 @@ export async function createTailorByAdmin(data: {
     }
 
     // Create auth user with service role
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    let { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
+      password,
       email_confirm: true,
       user_metadata: {
         shop_name: shopName,
@@ -75,22 +81,33 @@ export async function createTailorByAdmin(data: {
       },
     });
 
-    if (authError) {
-      return { success: false, error: authError.message };
+    let authUser = authData?.user;
+    if (authError || !authUser) {
+      console.warn('createUser with role: tailor encountered error, falling back to direct creation:', authError?.message);
+      const fallbackCreate = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          shop_name: shopName,
+          phone,
+        },
+      });
+
+      if (fallbackCreate.error || !fallbackCreate.data.user) {
+        return { success: false, error: authError?.message || fallbackCreate.error?.message || 'Failed to create user account.' };
+      }
+      authUser = fallbackCreate.data.user;
     }
 
-    if (!authData.user) {
-      return { success: false, error: 'Failed to create user account.' };
-    }
-
-    // Fetch the tailor row created by on_tailor_signup trigger
-    const { data: tailorRow, error: tailorFetchError } = await supabase
+    // Fetch or create the tailor row
+    let { data: tailorRow } = await supabase
       .from('tailors')
       .select('*')
-      .eq('auth_id', authData.user.id)
+      .eq('auth_id', authUser.id)
       .maybeSingle();
 
-    if (tailorFetchError || !tailorRow) {
+    if (!tailorRow) {
       // Fallback search by email
       const { data: fallbackTailor } = await supabase
         .from('tailors')
@@ -99,15 +116,44 @@ export async function createTailorByAdmin(data: {
         .maybeSingle();
 
       if (fallbackTailor) {
-        revalidatePath('/admin');
-        revalidatePath('/admin/tailors');
-        return { success: true, tailor: fallbackTailor };
-      }
+        tailorRow = fallbackTailor;
+      } else {
+        // Build URL-safe slug
+        const rawSlug = shopName.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-');
+        let finalSlug = rawSlug || 'tailor';
+        let counter = 0;
+        while (true) {
+          const { data: existingSlug } = await supabase
+            .from('tailors')
+            .select('id')
+            .eq('shop_slug', finalSlug)
+            .maybeSingle();
+          if (!existingSlug) break;
+          counter++;
+          finalSlug = `${rawSlug}-${counter}`;
+        }
 
-      return {
-        success: false,
-        error: 'User created but tailor profile was not found. Please verify database triggers.',
-      };
+        const { data: insertedTailor, error: insertError } = await supabase
+          .from('tailors')
+          .insert({
+            auth_id: authUser.id,
+            shop_name: shopName,
+            shop_slug: finalSlug,
+            email,
+            phone,
+            status: 'pending',
+          })
+          .select()
+          .single();
+
+        if (insertError || !insertedTailor) {
+          return {
+            success: false,
+            error: insertError?.message || 'User created but failed to create tailor profile.',
+          };
+        }
+        tailorRow = insertedTailor;
+      }
     }
 
     revalidatePath('/admin');

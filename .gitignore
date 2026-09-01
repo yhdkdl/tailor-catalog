@@ -9,6 +9,7 @@ yarn-error.log*
 apps/web/.next/
 apps/web/out/
 apps/web/.vercel
+*.tsbuildinfo
 
 # ── Flutter ───────────────────────────────
 apps/mobile/.dart_tool/

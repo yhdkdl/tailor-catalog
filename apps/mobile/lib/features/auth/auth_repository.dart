@@ -26,8 +26,7 @@ class TailorProfile {
 abstract interface class AuthRepository {
   Stream<AuthState> get authStateChanges;
   Session? get currentSession;
-  Future<void> sendOtp(String email);
-  Future<void> verifyOtp(String email, String token);
+  Future<void> signIn(String email, String password);
   Future<TailorProfile> getProfile(String authId);
   Future<void> signOut();
 }
@@ -44,17 +43,11 @@ class SupabaseAuthRepository implements AuthRepository {
   Session? get currentSession => client.auth.currentSession;
 
   @override
-  Future<void> sendOtp(String email) async {
-    await client.auth.signInWithOtp(
+  Future<void> signIn(String email, String password) async {
+    await client.auth.signInWithPassword(
       email: email,
-      shouldCreateUser: false,
-      emailRedirectTo: null,
+      password: password,
     );
-  }
-
-  @override
-  Future<void> verifyOtp(String email, String token) async {
-    await client.auth.verifyOTP(email: email, token: token, type: OtpType.email);
   }
 
   @override
@@ -77,11 +70,7 @@ class UnconfiguredAuthRepository implements AuthRepository {
   Session? get currentSession => null;
 
   @override
-  Future<void> sendOtp(String email) =>
-      Future.error(Exception('Supabase is not configured for this build.'));
-
-  @override
-  Future<void> verifyOtp(String email, String token) =>
+  Future<void> signIn(String email, String password) =>
       Future.error(Exception('Supabase is not configured for this build.'));
 
   @override

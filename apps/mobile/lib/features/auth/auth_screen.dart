@@ -14,26 +14,28 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   final emailController = TextEditingController();
-  final otpController = TextEditingController();
-  bool otpSent = false;
+  final passwordController = TextEditingController();
+  bool obscurePassword = true;
   bool loading = false;
   String? error;
 
   @override
   void dispose() {
     emailController.dispose();
-    otpController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
   Future<void> submit() async {
     final email = emailController.text.trim();
-    if (!otpSent && !email.contains('@')) {
+    final password = passwordController.text.trim();
+
+    if (!email.contains('@')) {
       setState(() => error = 'Enter a valid email address.');
       return;
     }
-    if (otpSent && otpController.text.trim().length < 6) {
-      setState(() => error = 'Enter the 6-digit code from your email.');
+    if (password.isEmpty) {
+      setState(() => error = 'Enter your password.');
       return;
     }
 
@@ -42,14 +44,17 @@ class _AuthScreenState extends State<AuthScreen> {
       error = null;
     });
     try {
-      if (otpSent) {
-        await widget.repository.verifyOtp(email, otpController.text.trim());
-      } else {
-        await widget.repository.sendOtp(email);
-        if (mounted) setState(() => otpSent = true);
+      await widget.repository.signIn(email, password);
+    } catch (e) {
+      if (mounted) {
+        final errStr = e.toString().toLowerCase();
+        final message = errStr.contains('invalid login credentials') ||
+                errStr.contains('invalid_grant') ||
+                errStr.contains('invalid_credentials')
+            ? 'Incorrect email or password. Please try again.'
+            : e.toString().replaceFirst('Exception: ', '').replaceFirst('AuthException: ', '');
+        setState(() => error = message);
       }
-    } catch (exception) {
-      if (mounted) setState(() => error = exception.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -69,38 +74,56 @@ class _AuthScreenState extends State<AuthScreen> {
                 children: [
                   const Icon(Icons.content_cut_rounded, size: 48, color: AppColors.brand),
                   const SizedBox(height: 24),
-                  Text(otpSent ? 'Check your email' : 'Tailor sign in',
-                      style: Theme.of(context).textTheme.headlineMedium),
+                  Text('Tailor sign in', style: Theme.of(context).textTheme.headlineMedium),
                   const SizedBox(height: 8),
-                  Text(otpSent ? 'Enter the one-time code we sent to your email.' : 'Sign in to manage your design catalog.'),
+                  const Text('Sign in to manage your design catalog.'),
                   const SizedBox(height: 28),
                   TextField(
+                    key: const Key('email_field'),
                     controller: emailController,
-                    enabled: !otpSent && !loading,
+                    enabled: !loading,
                     keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(labelText: 'Email address'),
                   ),
-                  if (otpSent) ...[
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: otpController,
-                      enabled: !loading,
-                      keyboardType: TextInputType.number,
-                      maxLength: 6,
-                      decoration: const InputDecoration(labelText: 'One-time code'),
+                  const SizedBox(height: 16),
+                  TextField(
+                    key: const Key('password_field'),
+                    controller: passwordController,
+                    enabled: !loading,
+                    obscureText: obscurePassword,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => submit(),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      suffixIcon: IconButton(
+                        icon: Icon(obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                        onPressed: () => setState(() => obscurePassword = !obscurePassword),
+                      ),
                     ),
-                  ],
+                  ),
                   if (error != null) ...[
                     const SizedBox(height: 12),
                     Text(error!, style: const TextStyle(color: Colors.redAccent)),
                   ],
                   const SizedBox(height: 24),
                   FilledButton(
+                    key: const Key('signin_button'),
                     onPressed: loading ? null : submit,
-                    child: Text(loading ? 'Working...' : otpSent ? 'Verify code' : 'Send code'),
+                    child: loading
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Text('Sign in'),
                   ),
-                  if (otpSent)
-                    TextButton(onPressed: loading ? null : () => setState(() => otpSent = false), child: const Text('Use a different email')),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Contact your administrator to reset your password.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
                 ],
               ),
             ),
