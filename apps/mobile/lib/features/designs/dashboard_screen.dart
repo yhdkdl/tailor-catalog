@@ -5,6 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../auth/auth_repository.dart';
 import '../offline/offline_service.dart';
 import '../offline/offline_sync_manager.dart';
+import '../qr/qr_screen.dart';
 import '../upload/bulk_upload_screen.dart';
 import '../upload/single_upload_screen.dart';
 import 'design_repository.dart';
@@ -234,6 +235,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            key: const Key('qr_icon_btn'),
+            icon: const Icon(Icons.qr_code_2_outlined),
+            tooltip: 'Store QR Code',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => QrScreen(profile: widget.profile),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout_outlined),
             tooltip: 'Sign out',
