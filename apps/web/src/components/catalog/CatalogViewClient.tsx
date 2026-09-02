@@ -7,20 +7,19 @@ import { CatalogHeader } from './CatalogHeader';
 import { CatalogFilterBar, SortOption } from './CatalogFilterBar';
 import { DesignCard } from './DesignCard';
 import { CustomerDesignDetailModal } from './CustomerDesignDetailModal';
+import { TryOnModal } from './TryOnModal';
 import { Sparkles, Shirt, Camera, AlertCircle } from 'lucide-react';
 
 interface CatalogViewClientProps {
   tailor: CatalogTailor;
   categories: CatalogCategory[];
   initialDesigns: CatalogDesign[];
-  onOpenTryOnModal?: (design: CatalogDesign) => void;
 }
 
 export function CatalogViewClient({
   tailor,
   categories,
   initialDesigns,
-  onOpenTryOnModal,
 }: CatalogViewClientProps) {
   const { t } = useLanguage();
 
@@ -28,6 +27,7 @@ export function CatalogViewClient({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [selectedDesign, setSelectedDesign] = useState<CatalogDesign | null>(null);
+  const [tryOnDesign, setTryOnDesign] = useState<CatalogDesign | null>(null);
 
   // Filter and sort logic
   const filteredDesigns = useMemo(() => {
@@ -138,7 +138,7 @@ export function CatalogViewClient({
                 key={design.id}
                 design={design}
                 onInspect={(d) => setSelectedDesign(d)}
-                onTryOn={(d) => onOpenTryOnModal?.(d)}
+                onTryOn={(d) => setTryOnDesign(d)}
               />
             ))}
           </div>
@@ -153,8 +153,15 @@ export function CatalogViewClient({
         onClose={() => setSelectedDesign(null)}
         onTryOn={(d) => {
           setSelectedDesign(null);
-          onOpenTryOnModal?.(d);
+          setTryOnDesign(d);
         }}
+      />
+
+      {/* Virtual Try-On Camera Overlay Modal */}
+      <TryOnModal
+        design={tryOnDesign}
+        isOpen={!!tryOnDesign}
+        onClose={() => setTryOnDesign(null)}
       />
 
       {/* Footer */}
