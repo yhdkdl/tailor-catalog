@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 import { CatalogViewClient } from '@/components/catalog/CatalogViewClient';
 import { CatalogTailor, CatalogCategory, CatalogDesign } from '@/components/catalog/types';
 import { Store, Clock } from 'lucide-react';
@@ -15,7 +15,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const shopSlug = params.shopSlug;
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: tailor } = await supabase
     .from('tailors')
@@ -78,7 +78,10 @@ function ShopNotPublished({ shopName, status }: { shopName: string; status: stri
 
 export default async function TailorCatalogPage({ params }: PageProps) {
   const shopSlug = params.shopSlug;
-  const supabase = await createClient();
+  // Use admin client (service role) so RLS does not block the public catalog page.
+  // This server component runs on Vercel's server, never in the browser.
+  // We only expose approved tailor data to the client.
+  const supabase = createAdminClient();
 
   // 1. Fetch tailor by slug — no status filter yet so we can distinguish cases
   const { data: tailorData, error: tailorError } = await supabase
