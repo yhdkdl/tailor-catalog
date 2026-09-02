@@ -31,7 +31,7 @@ export default async function AdminDesignsPage({
       *,
       tailor:tailors(id, shop_name, shop_slug, email, status),
       category:categories(id, name_en, name_am, name_om, name_so),
-      photos:design_photos(id, storage_path, order_index)
+      photos:design_photos(id, cloudinary_public_id, cloudinary_url, order_index)
     `)
     .order('created_at', { ascending: false });
 
