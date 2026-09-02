@@ -423,8 +423,12 @@ class _DesignCard extends StatelessWidget {
               children: [
                 imageUrl.isNotEmpty
                     ? CachedNetworkImage(
+                        key: ValueKey(imageUrl),
                         imageUrl: imageUrl,
+                        cacheKey: imageUrl,
                         fit: BoxFit.cover,
+                        fadeInDuration: Duration.zero,
+                        fadeOutDuration: Duration.zero,
                         placeholder: (ctx, url) => Container(
                           color: Colors.black26,
                           child: const Icon(Icons.image_outlined, color: Colors.white24),
