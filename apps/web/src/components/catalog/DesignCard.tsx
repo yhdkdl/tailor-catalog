@@ -4,15 +4,15 @@ import React, { useState } from 'react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { CatalogDesign } from './types';
 import { getThumbnailUrl } from '@/lib/cloudinary';
-import { Layers, Tag, Camera, Eye, Sparkles } from 'lucide-react';
+import { Layers, Tag, Eye, Sparkles } from 'lucide-react';
 
 interface DesignCardProps {
   design: CatalogDesign;
   onInspect: (design: CatalogDesign) => void;
-  onTryOn: (design: CatalogDesign) => void;
+  onView360: (design: CatalogDesign) => void;
 }
 
-export function DesignCard({ design, onInspect, onTryOn }: DesignCardProps) {
+export function DesignCard({ design, onInspect, onView360 }: DesignCardProps) {
   const { t, getCategoryName } = useLanguage();
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -100,12 +100,12 @@ export function DesignCard({ design, onInspect, onTryOn }: DesignCardProps) {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onTryOn(design);
+              onView360(design);
             }}
             className="py-2 px-2.5 rounded-xl bg-brand-500/15 hover:bg-brand-500 text-brand-300 hover:text-surface-950 border border-brand-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-sm"
           >
-            <Camera className="w-3.5 h-3.5" />
-            <span className="truncate">{t('design.try_on')}</span>
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="truncate">{t('design.view_360')}</span>
           </button>
         </div>
       </div>

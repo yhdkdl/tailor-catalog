@@ -1,26 +1,46 @@
-import type { Language } from '@tailor-catalog/shared';
+export type Language = 'en' | 'am' | 'om' | 'so';
 
 export interface LanguageOption {
   code: Language;
   label: string;
   nativeLabel: string;
-  region: string;
+  flag: string;
 }
 
 export const SUPPORTED_LANGUAGES: LanguageOption[] = [
-  { code: 'en', label: 'English', nativeLabel: 'English', region: 'Default' },
-  { code: 'am', label: 'Amharic', nativeLabel: 'አማርኛ', region: 'ኢትዮጵያ' },
-  { code: 'om', label: 'Oromifa', nativeLabel: 'Afaan Oromoo', region: 'Oromiyaa' },
-  { code: 'so', label: 'Somali', nativeLabel: 'Af Soomaali', region: 'Soomaali' },
+  {
+    code: 'en',
+    label: 'English',
+    nativeLabel: 'English',
+    flag: '🇬🇧',
+  },
+  {
+    code: 'am',
+    label: 'Amharic',
+    nativeLabel: 'አማርኛ',
+    flag: '🇪🇹',
+  },
+  {
+    code: 'om',
+    label: 'Oromifa',
+    nativeLabel: 'Afaan Oromoo',
+    flag: '🇪🇹',
+  },
+  {
+    code: 'so',
+    label: 'Somali',
+    nativeLabel: 'Af Soomaali',
+    flag: '🇸🇴',
+  },
 ];
 
 export const translations = {
   en: {
     // Language Selection Modal
     'language.picker.title': 'Choose Your Language',
-    'language.picker.subtitle': 'Select your preferred language to browse the tailor catalog',
+    'language.picker.subtitle': 'Select your preferred language to browse handcrafted designs',
     'language.picker.continue': 'Continue',
-    'language.picker.change_anytime': 'You can change the language anytime from the menu',
+    'language.picker.change_anytime': 'You can change language anytime from the header',
 
     // Header & Navigation
     'header.verified_tailor': 'Verified Tailor',
@@ -32,23 +52,23 @@ export const translations = {
     'header.change_language': 'Change Language',
 
     // Catalog & Filters
-    'catalog.title': 'Designs Catalog',
-    'catalog.subtitle': 'Explore custom handcrafted designs and traditional fashion',
+    'catalog.title': 'Custom Catalog',
+    'catalog.subtitle': 'Browse authentic handcrafted designs and bespoke fashion',
     'catalog.all_categories': 'All Categories',
-    'catalog.search_placeholder': 'Search by style, tag or price...',
+    'catalog.search_placeholder': 'Search by style, tag, or price...',
     'catalog.sort.newest': 'Newest First',
     'catalog.sort.price_low': 'Price: Low to High',
     'catalog.sort.price_high': 'Price: High to Low',
     'catalog.showing_count': 'Showing {count} of {total} designs',
     'catalog.reset_filters': 'Reset Filters',
     'catalog.no_designs': 'No designs found',
-    'catalog.no_designs_desc': 'There are no designs matching your selected filters.',
+    'catalog.no_designs_desc': 'Try selecting a different category or clearing your search filters.',
     'catalog.photos_count': '{count} Photos',
     'catalog.currency': 'ETB {price}',
 
     // Design Card & Detail
     'design.view_details': 'View Details',
-    'design.try_on': 'Virtual Try-On',
+    'design.view_360': 'View 360°',
     'design.price': 'Price',
     'design.category': 'Category',
     'design.tag': 'Style Tag',
@@ -57,19 +77,13 @@ export const translations = {
     'design.format_grouped': 'Multi-Photo Collection',
     'design.close': 'Close',
 
-    // Virtual Try-On
-    'tryon.title': 'Virtual Try-On',
-    'tryon.subtitle': 'Overlay this outfit onto your camera to preview how it looks',
-    'tryon.hint': 'Drag to position • Pinch or slide to resize',
-    'tryon.opacity': 'Opacity',
-    'tryon.size': 'Size',
-    'tryon.flip_camera': 'Flip Camera',
-    'tryon.take_snapshot': 'Take Photo',
-    'tryon.reset_overlay': 'Reset Position',
-    'tryon.camera_error': 'Unable to access camera. Please allow camera permissions.',
-    'tryon.camera_permission': 'Camera Access Required',
-    'tryon.camera_permission_desc': 'Please allow camera access in your browser settings to use the live try-on feature.',
-    'tryon.close': 'Exit Try-On',
+    // 360 Photo Viewer
+    'viewer360.title': '360° Photo Viewer',
+    'viewer360.counter': '{current} of {total}',
+    'viewer360.zoom_hint': 'Pinch or double-tap to zoom',
+    'viewer360.close': 'Close',
+    'viewer360.prev': 'Previous photo',
+    'viewer360.next': 'Next photo',
 
     // 404 & Error states
     'error.tailor_not_found': 'Tailor Shop Not Found',
@@ -86,37 +100,37 @@ export const translations = {
   am: {
     // Language Selection Modal
     'language.picker.title': 'ቋንቋ ይምረጡ',
-    'language.picker.subtitle': 'የልብስ ዲዛይኖችን ለመመልከት የሚመርጡትን ቋንቋ ይምረጡ',
+    'language.picker.subtitle': 'የተሰፉ ልብሶችን ለመመልከት የሚመርጡትን ቋንቋ ይምረጡ',
     'language.picker.continue': 'ቀጥል',
-    'language.picker.change_anytime': 'ቋንቋውን በማንኛውም ጊዜ መቀየር ይችላሉ',
+    'language.picker.change_anytime': 'በማንኛውም ጊዜ ከላይ ያለውን የቋንቋ ምልክት በመጫን መቀየር ይችላሉ',
 
     // Header & Navigation
     'header.verified_tailor': 'የተረጋገጠ ሰፊ',
     'header.contact_tailor': 'ሰፊውን ያግኙ',
-    'header.call_phone': 'ደውል',
-    'header.share_catalog': 'ካታሎግ አጋራ',
-    'header.link_copied': 'ሊንኩ ተገልብጧል!',
+    'header.call_phone': 'ይደውሉ',
+    'header.share_catalog': 'ካታሎጉን አጋራ',
+    'header.link_copied': 'ሊንኩ ተቀድቷል!',
     'header.qr_code': 'የሱቅ QR ኮድ',
     'header.change_language': 'ቋንቋ ቀይር',
 
     // Catalog & Filters
-    'catalog.title': 'የዲዛይን ካታሎግ',
-    'catalog.subtitle': 'የተመረጡ የፋሽን እና የባህል ልብስ ዲዛይኖችን ይመልከቱ',
+    'catalog.title': 'የልብስ ካታሎግ',
+    'catalog.subtitle': 'በባህልና በዘመናዊ ጥበብ የተሰሩ ልዩ የልብስ ዲዛይኖችን ይመልከቱ',
     'catalog.all_categories': 'ሁሉም ምድቦች',
-    'catalog.search_placeholder': 'በስም ፣ መለያ ወይም ዋጋ ይፈልጉ...',
-    'catalog.sort.newest': 'አዳዲስ መጀመሪያ',
+    'catalog.search_placeholder': 'በስም ፣ በመለያ ወይም በዋጋ ይፈልጉ...',
+    'catalog.sort.newest': 'አዳዲስ',
     'catalog.sort.price_low': 'ዋጋ፡ ከዝቅተኛ ወደ ከፍተኛ',
     'catalog.sort.price_high': 'ዋጋ፡ ከከፍተኛ ወደ ዝቅተኛ',
-    'catalog.showing_count': 'ከ {total} ውስጥ {count} ዲዛይኖች ታይተዋል',
-    'catalog.reset_filters': 'ማጣሪያዎችን አጽዳ',
+    'catalog.showing_count': 'ከ{total} ውስጥ {count} ዲዛይኖች',
+    'catalog.reset_filters': 'ሁሉንም አሳይ',
     'catalog.no_designs': 'ምንም ዲዛይን አልተገኘም',
-    'catalog.no_designs_desc': 'ከተመረጠው ማጣሪያ ጋር የሚስማማ ዲዛይን የለም።',
+    'catalog.no_designs_desc': 'የተመረጠው ምድብ ውስጥ ምንም ዲዛይን የለም። እባክዎ ሌላ ምድብ ይምረጡ።',
     'catalog.photos_count': '{count} ፎቶዎች',
     'catalog.currency': '{price} ብር',
 
     // Design Card & Detail
     'design.view_details': 'ዝርዝሩን ይመልከቱ',
-    'design.try_on': 'በካሜራ ይሞክሩ',
+    'design.view_360': '360° እይታ',
     'design.price': 'ዋጋ',
     'design.category': 'ምድብ',
     'design.tag': 'መለያ',
@@ -125,19 +139,13 @@ export const translations = {
     'design.format_grouped': 'ባለብዙ ፎቶ ስብስብ',
     'design.close': 'ዝጋ',
 
-    // Virtual Try-On
-    'tryon.title': 'በካሜራ ልብሱን ይሞክሩ',
-    'tryon.subtitle': 'ልብሱ በእርስዎ ላይ እንዴት እንደሚታይ በካሜራው ላይ አስተካክለው ይመልከቱ',
-    'tryon.hint': 'ለማንቀሳቀስ ይጎትቱ • በመቆንጠጥ መጠኑን ያስተካክሉ',
-    'tryon.opacity': 'የቀለም ጥራት',
-    'tryon.size': 'መጠን',
-    'tryon.flip_camera': 'ካሜራ ቀይር',
-    'tryon.take_snapshot': 'ፎቶ አንሳ',
-    'tryon.reset_overlay': 'መጀመሪያ ቦታ መልስ',
-    'tryon.camera_error': 'ካሜራውን መክፈት አልተቻለም። እባክዎ ፍቃድ ይስጡ።',
-    'tryon.camera_permission': 'የካሜራ ፍቃድ ያስፈልጋል',
-    'tryon.camera_permission_desc': 'የቀጥታ ሙከራውን ለመጠቀም እባክዎ በስልክዎ ላይ የካሜራ ፍቃድ ይፍቀዱ።',
-    'tryon.close': 'ውጣ',
+    // 360 Photo Viewer
+    'viewer360.title': '360° የፎቶ እይታ',
+    'viewer360.counter': '{current} ከ {total}',
+    'viewer360.zoom_hint': 'ለማጉላት ሁለቴ ይንኩ ወይም ያሳድጉ',
+    'viewer360.close': 'ዝጋ',
+    'viewer360.prev': 'ቀዳሚ ፎቶ',
+    'viewer360.next': 'ቀጣይ ፎቶ',
 
     // 404 & Error states
     'error.tailor_not_found': 'የሰፊ ሱቅ አልተገኘም',
@@ -184,7 +192,7 @@ export const translations = {
 
     // Design Card & Detail
     'design.view_details': 'Bal\'ina Ilaali',
-    'design.try_on': 'Kaameraan Yaali',
+    'design.view_360': 'Ilaalcha 360°',
     'design.price': 'Gatii',
     'design.category': 'Garee',
     'design.tag': 'Mallattoo',
@@ -193,19 +201,13 @@ export const translations = {
     'design.format_grouped': 'Kuusaa Suuraa Hedduu',
     'design.close': 'Cufi',
 
-    // Virtual Try-On
-    'tryon.title': 'Uffata Kaameraan Yaali',
-    'tryon.subtitle': 'Uffanni kun akkamitti akka sitti tolu kaameraa irratti ilaali',
-    'tryon.hint': 'Sossoosuuf harkisaa • Bal\'isuuf xuqaa',
-    'tryon.opacity': 'Ifa Suuraa',
-    'tryon.size': 'Hammamtaa',
-    'tryon.flip_camera': 'Kaameraa Jijjiiri',
-    'tryon.take_snapshot': 'Suuraa Kaasi',
-    'tryon.reset_overlay': 'Iddoo Duriitti Deebisi',
-    'tryon.camera_error': 'Kaameraa banuu hin dandeenye. Hayyama kennaa.',
-    'tryon.camera_permission': 'Hayyama Kaameraa Barbaachisa',
-    'tryon.camera_permission_desc': 'Yaalii kaameraa fayyadamuuf saayitiif hayyama kennaa.',
-    'tryon.close': 'Bahi',
+    // 360 Photo Viewer
+    'viewer360.title': 'Ilaalcha Suuraa 360°',
+    'viewer360.counter': '{current} keessaa {total}',
+    'viewer360.zoom_hint': 'Guddisuuf dachaa xuqaa',
+    'viewer360.close': 'Cufi',
+    'viewer360.prev': 'Suuraa duraa',
+    'viewer360.next': 'Suuraa itti aanu',
 
     // 404 & Error states
     'error.tailor_not_found': 'Suuqiin Hodhaa Hin Argamne',
@@ -252,7 +254,7 @@ export const translations = {
 
     // Design Card & Detail
     'design.view_details': 'Faahfaahinta Eeg',
-    'design.try_on': 'Kamarad Ku Tijaabi',
+    'design.view_360': 'Aragtida 360°',
     'design.price': 'Qiimaha',
     'design.category': 'Qaybta',
     'design.tag': 'Calaamadda',
@@ -261,19 +263,13 @@ export const translations = {
     'design.format_grouped': 'Sawirro Badan',
     'design.close': 'Xir',
 
-    // Virtual Try-On
-    'tryon.title': 'Kamarad Ku Tijaabi Dharka',
-    'tryon.subtitle': 'Dharka dusha saar kamaradaada si aad u aragto sida uu kuugu ekaanayo',
-    'tryon.hint': 'Jiid si aad u dhaqaajiso • Fara-fuji si aad u weyneeyso',
-    'tryon.opacity': 'Cadadka Muuqaalka',
-    'tryon.size': 'Cabbirka',
-    'tryon.flip_camera': 'Beddel Kamarada',
-    'tryon.take_snapshot': 'Sawir Qaad',
-    'tryon.reset_overlay': 'Dib u Deji',
-    'tryon.camera_error': 'Kamarada lama furi karo. Fadlan fasax bixi.',
-    'tryon.camera_permission': 'Fasaxa Kamarada ayaa Loo Baahan Yahay',
-    'tryon.camera_permission_desc': 'Fadlan fasax u sii kamarada biraawsarkaaga si aad u isticmaasho tijaabada tooska ah.',
-    'tryon.close': 'Ka Bax',
+    // 360 Photo Viewer
+    'viewer360.title': 'Aragtida Sawirka 360°',
+    'viewer360.counter': '{current} ee {total}',
+    'viewer360.zoom_hint': 'Taabo laba jeer si aad u weynayso',
+    'viewer360.close': 'Xir',
+    'viewer360.prev': 'Sawirkii hore',
+    'viewer360.next': 'Sawirka xiga',
 
     // 404 & Error states
     'error.tailor_not_found': 'Dukaanka Talaamiga Lama Helin',

@@ -22,6 +22,9 @@ class FakeCloudinaryService implements CloudinaryService {
       secureUrl: 'https://res.cloudinary.com/test/image/upload/v1/tailor-designs/$authUid/$designId/fake_sample.jpg',
     );
   }
+
+  @override
+  Future<void> deleteImage({required String publicId}) async {}
 }
 
 class FakeDesignRepository implements DesignRepository {
@@ -133,6 +136,38 @@ class FakeDesignRepository implements DesignRepository {
       authUid: authUid,
     );
     return [d];
+  }
+
+  @override
+  Future<DesignItem> updateDesign({
+    required String designId,
+    required String categoryId,
+    required double price,
+    String? tag,
+    required List<DesignPhotoItem> existingPhotosToKeep,
+    required List<Uint8List> newImageBytesList,
+    required List<String> newFilenames,
+    required List<String> deletedPhotoIds,
+    required List<String> deletedCloudinaryPublicIds,
+    required String authUid,
+    void Function(int current, int total)? onProgress,
+  }) async {
+    final idx = designs.indexWhere((d) => d.id == designId);
+    final existing = idx != -1 ? designs[idx] : null;
+    final updated = DesignItem(
+      id: designId,
+      tailorId: existing?.tailorId ?? 'tailor-1',
+      categoryId: categoryId,
+      price: price,
+      tag: tag,
+      isGrouped: existing?.isGrouped ?? false,
+      categoryName: categories.firstWhere((c) => c.id == categoryId, orElse: () => categories.first).nameEn,
+      photos: existingPhotosToKeep,
+    );
+    if (idx != -1) {
+      designs[idx] = updated;
+    }
+    return updated;
   }
 
   @override

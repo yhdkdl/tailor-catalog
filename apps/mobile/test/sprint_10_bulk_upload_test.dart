@@ -131,6 +131,38 @@ class FakeBulkDesignRepository implements DesignRepository {
   }
 
   @override
+  Future<DesignItem> updateDesign({
+    required String designId,
+    required String categoryId,
+    required double price,
+    String? tag,
+    required List<DesignPhotoItem> existingPhotosToKeep,
+    required List<Uint8List> newImageBytesList,
+    required List<String> newFilenames,
+    required List<String> deletedPhotoIds,
+    required List<String> deletedCloudinaryPublicIds,
+    required String authUid,
+    void Function(int current, int total)? onProgress,
+  }) async {
+    final idx = designs.indexWhere((d) => d.id == designId);
+    final existing = idx != -1 ? designs[idx] : null;
+    final updated = DesignItem(
+      id: designId,
+      tailorId: existing?.tailorId ?? 'tailor-1',
+      categoryId: categoryId,
+      price: price,
+      tag: tag,
+      isGrouped: existing?.isGrouped ?? false,
+      categoryName: 'Traditional Attire',
+      photos: existingPhotosToKeep,
+    );
+    if (idx != -1) {
+      designs[idx] = updated;
+    }
+    return updated;
+  }
+
+  @override
   Future<void> deleteDesign(String designId) async {
     designs.removeWhere((d) => d.id == designId);
   }

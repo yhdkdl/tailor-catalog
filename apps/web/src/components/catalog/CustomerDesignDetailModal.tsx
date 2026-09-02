@@ -8,12 +8,9 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Camera,
   Layers,
   Tag,
   Store,
-  DollarSign,
-  Calendar,
   Sparkles,
   Shirt,
 } from 'lucide-react';
@@ -23,7 +20,7 @@ interface CustomerDesignDetailModalProps {
   tailor: CatalogTailor;
   isOpen: boolean;
   onClose: () => void;
-  onTryOn: (design: CatalogDesign) => void;
+  onView360: (design: CatalogDesign) => void;
 }
 
 export function CustomerDesignDetailModal({
@@ -31,7 +28,7 @@ export function CustomerDesignDetailModal({
   tailor,
   isOpen,
   onClose,
-  onTryOn,
+  onView360,
 }: CustomerDesignDetailModalProps) {
   const { t, getCategoryName } = useLanguage();
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
@@ -316,12 +313,12 @@ export function CustomerDesignDetailModal({
             <button
               onClick={() => {
                 onClose();
-                onTryOn(design);
+                onView360(design);
               }}
               className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-surface-950 font-bold text-sm shadow-xl shadow-brand-500/20 transition duration-200 flex items-center justify-center gap-2 active:scale-[0.99]"
             >
-              <Camera className="w-4 h-4" />
-              <span>{t('design.try_on')}</span>
+              <Sparkles className="w-4 h-4" />
+              <span>{t('design.view_360')}</span>
             </button>
 
             <button

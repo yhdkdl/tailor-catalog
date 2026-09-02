@@ -9,6 +9,7 @@ import '../qr/qr_screen.dart';
 import '../upload/bulk_upload_screen.dart';
 import '../upload/single_upload_screen.dart';
 import 'design_repository.dart';
+import 'edit_design_screen.dart';
 import 'models.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -132,6 +133,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
           );
         }
       }
+    }
+  }
+
+  Future<void> _editDesign(DesignItem design) async {
+    final updated = await Navigator.of(context).push<DesignItem>(
+      MaterialPageRoute(
+        builder: (_) => EditDesignScreen(
+          design: design,
+          profile: widget.profile,
+          designRepository: widget.designRepository,
+          authUid: widget.profile.authId,
+        ),
+      ),
+    );
+
+    if (updated != null && mounted) {
+      setState(() {
+        final index = _designs.indexWhere((d) => d.id == updated.id);
+        if (index != -1) {
+          _designs[index] = updated;
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Design updated successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
     }
   }
 
@@ -383,6 +412,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final design = _designs[index];
         return _DesignCard(
           design: design,
+          onEdit: () => _editDesign(design),
           onDelete: () => _deleteDesign(design),
         );
       },
@@ -393,10 +423,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
 class _DesignCard extends StatelessWidget {
   const _DesignCard({
     required this.design,
+    required this.onEdit,
     required this.onDelete,
   });
 
   final DesignItem design;
+  final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   @override
@@ -469,6 +501,22 @@ class _DesignCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                // Edit button
+                Positioned(
+                  top: 6,
+                  right: 40,
+                  child: CircleAvatar(
+                    radius: 15,
+                    backgroundColor: Colors.black54,
+                    child: IconButton(
+                      key: Key('edit_design_btn_${design.id}'),
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(Icons.edit_outlined, size: 16, color: AppColors.brand),
+                      tooltip: 'Edit Design',
+                      onPressed: onEdit,
+                    ),
+                  ),
+                ),
                 // Delete button
                 Positioned(
                   top: 6,

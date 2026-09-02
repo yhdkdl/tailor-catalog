@@ -145,6 +145,32 @@ class FakeFailingDesignRepository implements DesignRepository {
   }
 
   @override
+  Future<DesignItem> updateDesign({
+    required String designId,
+    required String categoryId,
+    required double price,
+    String? tag,
+    required List<DesignPhotoItem> existingPhotosToKeep,
+    required List<Uint8List> newImageBytesList,
+    required List<String> newFilenames,
+    required List<String> deletedPhotoIds,
+    required List<String> deletedCloudinaryPublicIds,
+    required String authUid,
+    void Function(int current, int total)? onProgress,
+  }) async {
+    if (shouldFail) throw Exception('Network offline');
+    return DesignItem(
+      id: designId,
+      tailorId: 'tailor-1',
+      categoryId: categoryId,
+      price: price,
+      tag: tag,
+      isGrouped: false,
+      photos: existingPhotosToKeep,
+    );
+  }
+
+  @override
   Future<void> deleteDesign(String designId) async {}
 }
 
