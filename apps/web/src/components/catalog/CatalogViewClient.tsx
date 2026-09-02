@@ -6,13 +6,13 @@ import { CatalogTailor, CatalogCategory, CatalogDesign } from './types';
 import { CatalogHeader } from './CatalogHeader';
 import { CatalogFilterBar, SortOption } from './CatalogFilterBar';
 import { DesignCard } from './DesignCard';
+import { CustomerDesignDetailModal } from './CustomerDesignDetailModal';
 import { Sparkles, Shirt, Camera, AlertCircle } from 'lucide-react';
 
 interface CatalogViewClientProps {
   tailor: CatalogTailor;
   categories: CatalogCategory[];
   initialDesigns: CatalogDesign[];
-  onOpenDetailModal?: (design: CatalogDesign) => void;
   onOpenTryOnModal?: (design: CatalogDesign) => void;
 }
 
@@ -20,7 +20,6 @@ export function CatalogViewClient({
   tailor,
   categories,
   initialDesigns,
-  onOpenDetailModal,
   onOpenTryOnModal,
 }: CatalogViewClientProps) {
   const { t } = useLanguage();
@@ -28,6 +27,7 @@ export function CatalogViewClient({
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [selectedDesign, setSelectedDesign] = useState<CatalogDesign | null>(null);
 
   // Filter and sort logic
   const filteredDesigns = useMemo(() => {
@@ -137,13 +137,25 @@ export function CatalogViewClient({
               <DesignCard
                 key={design.id}
                 design={design}
-                onInspect={(d) => onOpenDetailModal?.(d)}
+                onInspect={(d) => setSelectedDesign(d)}
                 onTryOn={(d) => onOpenTryOnModal?.(d)}
               />
             ))}
           </div>
         )}
       </main>
+
+      {/* Customer Design Detail & Multi-Photo Carousel Modal */}
+      <CustomerDesignDetailModal
+        design={selectedDesign}
+        tailor={tailor}
+        isOpen={!!selectedDesign}
+        onClose={() => setSelectedDesign(null)}
+        onTryOn={(d) => {
+          setSelectedDesign(null);
+          onOpenTryOnModal?.(d);
+        }}
+      />
 
       {/* Footer */}
       <footer className="border-t border-slate-800/80 bg-surface-950/80 py-6 text-center text-xs text-slate-500 space-y-1">
