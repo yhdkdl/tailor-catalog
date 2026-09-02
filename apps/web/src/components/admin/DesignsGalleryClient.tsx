@@ -3,7 +3,6 @@
 import React, { useState, useMemo } from 'react';
 import { AdminDesignItem, DesignDetailModal } from './DesignDetailModal';
 import { deleteDesign } from '@/app/admin/actions';
-import { getSupabaseUrl } from '@/lib/supabase/client';
 import {
   Image as ImageIcon,
   Search,
@@ -53,11 +52,14 @@ export function DesignsGalleryClient({
   const [selectedDesign, setSelectedDesign] = useState<AdminDesignItem | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const supabaseUrl = getSupabaseUrl();
-
-  const getPhotoUrl = (storagePath?: string) => {
-    if (!storagePath) return '';
-    return `${supabaseUrl}/storage/v1/object/public/design-photos/${storagePath}`;
+  const getPhotoUrl = (photo?: { cloudinary_url: string | null; cloudinary_public_id: string | null }) => {
+    if (!photo) return '';
+    if (photo.cloudinary_url) return photo.cloudinary_url;
+    if (photo.cloudinary_public_id) {
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? 'tailor-catalog';
+      return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_800/${photo.cloudinary_public_id}`;
+    }
+    return '';
   };
 
   const handleQuickDelete = async (e: React.MouseEvent, designId: string) => {
@@ -240,7 +242,7 @@ export function DesignsGalleryClient({
                 <div className="relative aspect-[4/5] bg-surface-950 overflow-hidden">
                   {firstPhoto ? (
                     <img
-                      src={getPhotoUrl(firstPhoto.storage_path)}
+                      src={getPhotoUrl(firstPhoto)}
                       alt={design.tag || 'Design'}
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                     />

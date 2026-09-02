@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { deleteDesign } from '@/app/admin/actions';
-import { getSupabaseUrl } from '@/lib/supabase/client';
 import {
   X,
   Trash2,
@@ -45,7 +44,8 @@ export interface AdminDesignItem {
   } | null;
   photos?: Array<{
     id: string;
-    storage_path: string;
+    cloudinary_public_id: string | null;
+    cloudinary_url: string | null;
     order_index: number;
   }>;
 }
@@ -71,10 +71,13 @@ export function DesignDetailModal({
   if (!isOpen || !design) return null;
 
   const photos = design.photos || [];
-  const supabaseUrl = getSupabaseUrl();
-
-  const getPhotoUrl = (storagePath: string) => {
-    return `${supabaseUrl}/storage/v1/object/public/design-photos/${storagePath}`;
+  const getPhotoUrl = (photo: { cloudinary_url: string | null; cloudinary_public_id: string | null }) => {
+    if (photo.cloudinary_url) return photo.cloudinary_url;
+    if (photo.cloudinary_public_id) {
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? 'tailor-catalog';
+      return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_800/${photo.cloudinary_public_id}`;
+    }
+    return '';
   };
 
   const currentPhoto = photos[activePhotoIndex] || photos[0];
@@ -110,7 +113,7 @@ export function DesignDetailModal({
           <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-surface-900 border border-slate-800/80 flex items-center justify-center">
             {currentPhoto ? (
               <img
-                src={getPhotoUrl(currentPhoto.storage_path)}
+                src={getPhotoUrl(currentPhoto)}
                 alt={design.tag || 'Design photo'}
                 className="w-full h-full object-cover"
               />
@@ -165,7 +168,7 @@ export function DesignDetailModal({
                   }`}
                 >
                   <img
-                    src={getPhotoUrl(photo.storage_path)}
+                    src={getPhotoUrl(photo)}
                     alt={`Thumbnail ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
