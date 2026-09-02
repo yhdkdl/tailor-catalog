@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { createAdminClient } from '@/lib/supabase/server';
+import { createAdminClient, createClient } from '@/lib/supabase/server';
 import { CatalogViewClient } from '@/components/catalog/CatalogViewClient';
 import { CatalogTailor, CatalogCategory, CatalogDesign } from '@/components/catalog/types';
 import { Store, Clock } from 'lucide-react';
@@ -13,9 +13,23 @@ interface PageProps {
   };
 }
 
+/**
+ * Returns a Supabase client for catalog reads.
+ * Prefers service role (bypasses RLS) if the key is configured.
+ * Falls back to anon key — works once RLS policy 009/010 is applied.
+ */
+function getCatalogClient() {
+  const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (svcKey && svcKey.length > 20) {
+    return createAdminClient();
+  }
+  // Anon client — requires "tailors_public_read_approved" RLS policy on tailors
+  return createClient();
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const shopSlug = params.shopSlug;
-  const supabase = createAdminClient();
+  const supabase = await getCatalogClient();
 
   const { data: tailor } = await supabase
     .from('tailors')
@@ -78,22 +92,26 @@ function ShopNotPublished({ shopName, status }: { shopName: string; status: stri
 
 export default async function TailorCatalogPage({ params }: PageProps) {
   const shopSlug = params.shopSlug;
-  // Use admin client (service role) so RLS does not block the public catalog page.
-  // This server component runs on Vercel's server, never in the browser.
-  // We only expose approved tailor data to the client.
-  const supabase = createAdminClient();
 
-  // 1. Fetch tailor by slug — no status filter yet so we can distinguish cases
+  // Uses service role if SUPABASE_SERVICE_ROLE_KEY is set on the server,
+  // otherwise falls back to anon key (requires RLS policy 009/010 applied).
+  const supabase = await getCatalogClient();
+
+  const usingServiceRole = !!(process.env.SUPABASE_SERVICE_ROLE_KEY?.length ?? 0 > 20);
+  console.log(`[catalog] shopSlug="${shopSlug}" usingServiceRole=${usingServiceRole}`);
+
+  // 1. Fetch tailor by slug — no status filter so we can distinguish pending vs missing
   const { data: tailorData, error: tailorError } = await supabase
     .from('tailors')
     .select('id, shop_name, shop_slug, email, phone, status')
     .eq('shop_slug', shopSlug)
     .maybeSingle();
 
-  console.log(`[catalog] shopSlug="${shopSlug}" found=${!!tailorData} status=${tailorData?.status ?? 'N/A'} error=${tailorError?.message ?? 'none'}`);
+  console.log(`[catalog] found=${!!tailorData} status=${tailorData?.status ?? 'N/A'} error=${tailorError?.message ?? 'none'}`);
 
   // Slug doesn't exist at all
   if (tailorError || !tailorData) {
+    console.log(`[catalog] 404 — tailor not found for slug="${shopSlug}"`);
     notFound();
   }
 
@@ -113,7 +131,7 @@ export default async function TailorCatalogPage({ params }: PageProps) {
     status: tailorData.status as 'approved',
   };
 
-  // 2. Fetch categories
+  // 2. Fetch categories (public read RLS exists — anon can always read)
   const { data: categoriesData } = await supabase
     .from('categories')
     .select('id, name_en, name_am, name_om, name_so, sort_order')
