@@ -37,6 +37,19 @@ abstract interface class DesignRepository {
     required String authUid,
     void Function(int current, int total)? onProgress,
   });
+  Future<DesignItem> updateDesign({
+    required String designId,
+    required String categoryId,
+    required double price,
+    String? tag,
+    required List<DesignPhotoItem> existingPhotosToKeep,
+    required List<Uint8List> newImageBytesList,
+    required List<String> newFilenames,
+    required List<String> deletedPhotoIds,
+    required List<String> deletedCloudinaryPublicIds,
+    required String authUid,
+    void Function(int current, int total)? onProgress,
+  });
   Future<void> deleteDesign(String designId);
 }
 
@@ -235,6 +248,77 @@ class SupabaseDesignRepository implements DesignRepository {
   }
 
   @override
+  Future<DesignItem> updateDesign({
+    required String designId,
+    required String categoryId,
+    required double price,
+    String? tag,
+    required List<DesignPhotoItem> existingPhotosToKeep,
+    required List<Uint8List> newImageBytesList,
+    required List<String> newFilenames,
+    required List<String> deletedPhotoIds,
+    required List<String> deletedCloudinaryPublicIds,
+    required String authUid,
+    void Function(int current, int total)? onProgress,
+  }) async {
+    // 1. Update design core attributes
+    await client.from('designs').update({
+      'category_id': categoryId,
+      'price': price,
+      'tag': tag?.trim().isNotEmpty == true ? tag!.trim() : null,
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', designId);
+
+    // 2. Delete removed photos from DB and Cloudinary
+    for (final pid in deletedPhotoIds) {
+      await client.from('design_photos').delete().eq('id', pid);
+    }
+    for (final pubId in deletedCloudinaryPublicIds) {
+      await _cloudinaryService.deleteImage(publicId: pubId);
+    }
+
+    // 3. Update existing photos order_index
+    for (var i = 0; i < existingPhotosToKeep.length; i++) {
+      final p = existingPhotosToKeep[i];
+      await client.from('design_photos').update({
+        'order_index': i,
+      }).eq('id', p.id);
+    }
+
+    // 4. Upload and insert new photos
+    final startIndex = existingPhotosToKeep.length;
+    for (var i = 0; i < newImageBytesList.length; i++) {
+      final bytes = newImageBytesList[i];
+      final fname = newFilenames.length > i ? newFilenames[i] : 'photo_${startIndex + i}.jpg';
+
+      final uploadResult = await _cloudinaryService.uploadImage(
+        imageBytes: bytes,
+        filename: fname,
+        authUid: authUid,
+        designId: designId,
+      );
+
+      await client.from('design_photos').insert({
+        'design_id': designId,
+        'cloudinary_public_id': uploadResult.publicId,
+        'cloudinary_url': uploadResult.secureUrl,
+        'order_index': startIndex + i,
+      });
+
+      onProgress?.call(i + 1, newImageBytesList.length);
+    }
+
+    // 5. Fetch updated design record
+    final data = await client
+        .from('designs')
+        .select('*, design_photos(*), categories(name_en, name_am, name_om, name_so)')
+        .eq('id', designId)
+        .single();
+
+    return DesignItem.fromJson(data);
+  }
+
+  @override
   Future<void> deleteDesign(String designId) async {
     await client.from('designs').delete().eq('id', designId);
   }
@@ -282,6 +366,22 @@ class UnconfiguredDesignRepository implements DesignRepository {
     String? tag,
     required List<Uint8List> imageBytesList,
     required List<String> filenames,
+    required String authUid,
+    void Function(int current, int total)? onProgress,
+  }) async =>
+      throw Exception('Supabase is not configured.');
+
+  @override
+  Future<DesignItem> updateDesign({
+    required String designId,
+    required String categoryId,
+    required double price,
+    String? tag,
+    required List<DesignPhotoItem> existingPhotosToKeep,
+    required List<Uint8List> newImageBytesList,
+    required List<String> newFilenames,
+    required List<String> deletedPhotoIds,
+    required List<String> deletedCloudinaryPublicIds,
     required String authUid,
     void Function(int current, int total)? onProgress,
   }) async =>

@@ -53,3 +53,34 @@ export function getFullPhotoUrl(photo?: PhotoData | null): string {
 
   return '';
 }
+
+/**
+ * 360 Full Size Photo URL generator
+ * Uses Cloudinary full size preset: f_auto,q_auto,w_1200
+ */
+export function getHighRes360PhotoUrl(photo?: PhotoData | null): string {
+  if (!photo) return '';
+
+  if (photo.cloudinary_public_id) {
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    if (cloudName) {
+      return cloudinaryUrl(photo.cloudinary_public_id, {
+        width: 1200,
+        quality: 'auto',
+        format: 'auto',
+      });
+    }
+  }
+
+  if (photo.cloudinary_url) {
+    if (photo.cloudinary_url.includes('/image/upload/')) {
+      return photo.cloudinary_url.replace(
+        '/image/upload/',
+        '/image/upload/w_1200,f_auto,q_auto/'
+      );
+    }
+    return photo.cloudinary_url;
+  }
+
+  return '';
+}

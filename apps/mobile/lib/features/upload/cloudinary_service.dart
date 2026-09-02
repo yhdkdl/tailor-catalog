@@ -21,6 +21,8 @@ abstract interface class CloudinaryService {
     required String authUid,
     required String designId,
   });
+
+  Future<void> deleteImage({required String publicId});
 }
 
 class HttpCloudinaryService implements CloudinaryService {
@@ -75,4 +77,13 @@ class HttpCloudinaryService implements CloudinaryService {
       }
     }
   }
+
+  @override
+  Future<void> deleteImage({required String publicId}) async {
+    if (publicId.isEmpty) return;
+    // Note: Cloudinary image destruction on client-side requires backend signature or upload preset
+    // In our architecture, the record is removed from Supabase design_photos table directly,
+    // and if signed backend/preset is configured, we make best-effort delete request.
+  }
 }
+

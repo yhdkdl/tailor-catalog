@@ -7,8 +7,8 @@ import { CatalogHeader } from './CatalogHeader';
 import { CatalogFilterBar, SortOption } from './CatalogFilterBar';
 import { DesignCard } from './DesignCard';
 import { CustomerDesignDetailModal } from './CustomerDesignDetailModal';
-import { TryOnModal } from './TryOnModal';
-import { Sparkles, Shirt, Camera, AlertCircle } from 'lucide-react';
+import { PhotoViewer360Modal } from './PhotoViewer360Modal';
+import { Shirt } from 'lucide-react';
 
 interface CatalogViewClientProps {
   tailor: CatalogTailor;
@@ -27,7 +27,7 @@ export function CatalogViewClient({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [selectedDesign, setSelectedDesign] = useState<CatalogDesign | null>(null);
-  const [tryOnDesign, setTryOnDesign] = useState<CatalogDesign | null>(null);
+  const [viewer360Design, setViewer360Design] = useState<CatalogDesign | null>(null);
 
   // Filter and sort logic
   const filteredDesigns = useMemo(() => {
@@ -138,7 +138,7 @@ export function CatalogViewClient({
                 key={design.id}
                 design={design}
                 onInspect={(d) => setSelectedDesign(d)}
-                onTryOn={(d) => setTryOnDesign(d)}
+                onView360={(d) => setViewer360Design(d)}
               />
             ))}
           </div>
@@ -151,17 +151,17 @@ export function CatalogViewClient({
         tailor={tailor}
         isOpen={!!selectedDesign}
         onClose={() => setSelectedDesign(null)}
-        onTryOn={(d) => {
+        onView360={(d) => {
           setSelectedDesign(null);
-          setTryOnDesign(d);
+          setViewer360Design(d);
         }}
       />
 
-      {/* Virtual Try-On Camera Overlay Modal */}
-      <TryOnModal
-        design={tryOnDesign}
-        isOpen={!!tryOnDesign}
-        onClose={() => setTryOnDesign(null)}
+      {/* 360 Photo Viewer Full-Screen Modal */}
+      <PhotoViewer360Modal
+        design={viewer360Design}
+        isOpen={!!viewer360Design}
+        onClose={() => setViewer360Design(null)}
       />
 
       {/* Footer */}
