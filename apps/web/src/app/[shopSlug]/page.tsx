@@ -148,7 +148,7 @@ export default async function TailorCatalogPage({ params, searchParams }: PagePr
   }));
 
   // 3. Fetch designs for this tailor
-  const { data: designsData } = await supabase
+  let { data: designsData, error: designsError } = await supabase
     .from('designs')
     .select(`
       id,
@@ -165,6 +165,31 @@ export default async function TailorCatalogPage({ params, searchParams }: PagePr
     `)
     .eq('tailor_id', tailor.id)
     .order('created_at', { ascending: false });
+
+  // Keep catalogs readable while the optional trending migration is being deployed.
+  if (designsError) {
+    const fallbackResult = await supabase
+      .from('designs')
+      .select(`
+        id,
+        tailor_id,
+        category_id,
+        price,
+        tag,
+        is_grouped,
+        created_at,
+        updated_at,
+        category:categories(id, name_en, name_am, name_om, name_so, sort_order),
+        photos:design_photos(id, cloudinary_public_id, cloudinary_url, order_index)
+      `)
+      .eq('tailor_id', tailor.id)
+      .order('created_at', { ascending: false });
+    designsData = fallbackResult.data?.map((design) => ({
+      ...design,
+      is_trending: false,
+    })) ?? null;
+    designsError = fallbackResult.error;
+  }
 
   const designs: CatalogDesign[] = (designsData || []).map((d: any) => ({
     id: d.id,
