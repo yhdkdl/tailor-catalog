@@ -177,7 +177,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ListTile(
               leading: const Icon(Icons.add_photo_alternate_outlined, color: AppColors.brand),
               title: const Text('Single Photo Design', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text('Upload one photo with price and category'),
+              subtitle: const Text('Upload one photo with category'),
               onTap: () {
                 Navigator.of(ctx).pop();
                 _navigateToSingleUpload();
@@ -383,7 +383,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Text('Your catalog is empty', style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 8),
               const Text(
-                'Upload photos of your tailoring work with prices and categories to showcase them to customers.',
+                'Upload photos of your tailoring work with categories to showcase them to customers.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey),
               ),
@@ -540,11 +540,6 @@ class _DesignCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'ETB ${design.price.toStringAsFixed(0)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.brand),
-                ),
-                const SizedBox(height: 2),
                 if (design.categoryName != null && design.categoryName!.isNotEmpty)
                   Text(
                     design.categoryName!,

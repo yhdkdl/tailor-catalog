@@ -199,7 +199,6 @@ void main() {
       expect(find.text('Upload Structure'), findsOneWidget);
       expect(find.text('Separate Cards'), findsOneWidget);
       expect(find.text('Grouped Carousel'), findsOneWidget);
-      expect(find.byKey(const Key('bulk_price_field')), findsOneWidget);
       expect(find.byKey(const Key('bulk_tag_field')), findsOneWidget);
       expect(find.byKey(const Key('publish_bulk_btn')), findsOneWidget);
 
@@ -264,7 +263,6 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('ETB 5200'), findsOneWidget);
       expect(find.text('#Wedding Set'), findsOneWidget);
       // Photo count badge shows 3
       expect(find.text('3'), findsOneWidget);

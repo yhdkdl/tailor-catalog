@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -6,17 +7,14 @@ import '../../core/theme/app_theme.dart';
 import '../auth/auth_repository.dart';
 import '../designs/design_repository.dart';
 import '../designs/models.dart';
+import 'photo_preview_screen.dart';
 
-enum BulkUploadMode {
-  individual,
-  grouped,
-}
+import 'package:reorderables/reorderables.dart';
+
+enum BulkUploadMode { individual, grouped }
 
 class _PickedImageItem {
-  const _PickedImageItem({
-    required this.bytes,
-    required this.name,
-  });
+  const _PickedImageItem({required this.bytes, required this.name});
 
   final Uint8List bytes;
   final String name;
@@ -40,7 +38,6 @@ class BulkUploadScreen extends StatefulWidget {
 
 class _BulkUploadScreenState extends State<BulkUploadScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _priceController = TextEditingController();
   final _tagController = TextEditingController();
   final _imagePicker = ImagePicker();
 
@@ -62,7 +59,6 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
 
   @override
   void dispose() {
-    _priceController.dispose();
     _tagController.dispose();
     super.dispose();
   }
@@ -114,6 +110,131 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
     }
   }
 
+  Future<void> _pickCameraImage() async {
+    try {
+      final file = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+      if (file == null) return;
+      final bytes = await file.readAsBytes();
+      if (!mounted) return;
+      final accepted = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          fullscreenDialog: true,
+          builder: (_) => PhotoPreviewScreen(
+            bytes: bytes,
+            counter: 'Photo ${_pickedImages.length + 1}',
+          ),
+        ),
+      );
+      if (!mounted) return;
+      if (accepted != true) {
+        await _pickCameraImage();
+      } else if (mounted) {
+        setState(
+          () => _pickedImages.add(
+            _PickedImageItem(bytes: bytes, name: file.name),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) setState(() => _errorMessage = 'Camera capture failed: $e');
+    }
+  }
+
+  Widget _reviewTile(int index) {
+    final image = _pickedImages[index];
+    return SizedBox(
+      key: ValueKey('${image.name}-$index'),
+      width: 100,
+      height: 120,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.memory(image.bytes, fit: BoxFit.cover),
+            ),
+          ),
+          Positioned(
+            top: 4,
+            right: 4,
+            child: GestureDetector(
+              onTap: _uploading ? null : () => _removeImage(index),
+              child: const CircleAvatar(
+                radius: 12,
+                backgroundColor: Colors.black87,
+                child: Icon(Icons.close, size: 14, color: Colors.white),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 4,
+            left: 4,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+              color: Colors.black54,
+              child: Text(
+                '#${index + 1}',
+                style: const TextStyle(fontSize: 9, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _addPhotoTile() {
+    return SizedBox(
+      key: const ValueKey('add-photo'),
+      width: 100,
+      height: 120,
+      child: GestureDetector(
+        onTap: _uploading ? null : _showPhotoSourceSheet,
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white12),
+          ),
+          child: const Icon(Icons.add, color: AppColors.brand, size: 30),
+        ),
+      ),
+    );
+  }
+
+  void _showPhotoSourceSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take Photo'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickCameraImage();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickMultiImages();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _removeImage(int index) {
     setState(() {
       _pickedImages.removeAt(index);
@@ -133,12 +254,6 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
       return;
     }
 
-    final price = double.tryParse(_priceController.text.trim()) ?? 0.0;
-    if (price <= 0) {
-      setState(() => _errorMessage = 'Price must be greater than 0.');
-      return;
-    }
-
     setState(() {
       _uploading = true;
       _uploadProgress = 0.0;
@@ -154,8 +269,10 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
         await widget.designRepository.createGroupedDesign(
           tailorId: widget.tailorProfile.id,
           categoryId: _selectedCategoryId!,
-          price: price,
-          tag: _tagController.text.trim().isNotEmpty ? _tagController.text.trim() : null,
+          price: 0,
+          tag: _tagController.text.trim().isNotEmpty
+              ? _tagController.text.trim()
+              : null,
           imageBytesList: bytesList,
           filenames: nameList,
           authUid: widget.authUid,
@@ -163,7 +280,8 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
             if (mounted) {
               setState(() {
                 _uploadProgress = current / total;
-                _progressMessage = 'Uploaded photo $current of $total (${(_uploadProgress * 100).toInt()}%)';
+                _progressMessage =
+                    'Uploaded photo $current of $total (${(_uploadProgress * 100).toInt()}%)';
               });
             }
           },
@@ -172,8 +290,10 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
         await widget.designRepository.createBulkIndividualDesigns(
           tailorId: widget.tailorProfile.id,
           categoryId: _selectedCategoryId!,
-          price: price,
-          tag: _tagController.text.trim().isNotEmpty ? _tagController.text.trim() : null,
+          price: 0,
+          tag: _tagController.text.trim().isNotEmpty
+              ? _tagController.text.trim()
+              : null,
           imageBytesList: bytesList,
           filenames: nameList,
           authUid: widget.authUid,
@@ -181,7 +301,8 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
             if (mounted) {
               setState(() {
                 _uploadProgress = current / total;
-                _progressMessage = 'Uploaded design $current of $total (${(_uploadProgress * 100).toInt()}%)';
+                _progressMessage =
+                    'Uploaded design $current of $total (${(_uploadProgress * 100).toInt()}%)';
               });
             }
           },
@@ -214,9 +335,7 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bulk & Multi-Photo Upload'),
-      ),
+      appBar: AppBar(title: const Text('Bulk & Multi-Photo Upload')),
       body: SafeArea(
         child: _loadingCategories
             ? const Center(child: CircularProgressIndicator())
@@ -236,12 +355,20 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                             children: [
                               Text(
                                 'Selected Photos (${_pickedImages.length})',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
                               ),
                               TextButton.icon(
                                 key: const Key('add_photos_btn'),
-                                onPressed: _uploading ? null : _pickMultiImages,
-                                icon: const Icon(Icons.add_photo_alternate_outlined, size: 18),
+                                onPressed: _uploading
+                                    ? null
+                                    : _showPhotoSourceSheet,
+                                icon: const Icon(
+                                  Icons.add_photo_alternate_outlined,
+                                  size: 18,
+                                ),
                                 label: const Text('Add Photos'),
                               ),
                             ],
@@ -249,13 +376,16 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                           const SizedBox(height: 8),
                           if (_pickedImages.isEmpty)
                             GestureDetector(
-                              onTap: _uploading ? null : _pickMultiImages,
+                              onTap: _uploading ? null : _showPhotoSourceSheet,
                               child: Container(
                                 height: 160,
                                 decoration: BoxDecoration(
                                   color: AppColors.surface,
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.white12, width: 1.5),
+                                  border: Border.all(
+                                    color: Colors.white12,
+                                    width: 1.5,
+                                  ),
                                 ),
                                 child: Center(
                                   child: Column(
@@ -264,7 +394,9 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                                       Container(
                                         padding: const EdgeInsets.all(14),
                                         decoration: BoxDecoration(
-                                          color: AppColors.brand.withValues(alpha: 0.15),
+                                          color: AppColors.brand.withValues(
+                                            alpha: 0.15,
+                                          ),
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(
@@ -276,12 +408,18 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                                       const SizedBox(height: 10),
                                       const Text(
                                         'Tap to select multiple design photos',
-                                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 13,
+                                        ),
                                       ),
                                       const SizedBox(height: 4),
                                       const Text(
                                         'Select multiple photos from gallery',
-                                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -289,74 +427,124 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                               ),
                             )
                           else
-                            SizedBox(
-                              height: 120,
-                              child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: _pickedImages.length + 1,
-                                separatorBuilder: (context, index) => const SizedBox(width: 10),
-                                itemBuilder: (context, idx) {
-                                  if (idx == _pickedImages.length) {
-                                    return GestureDetector(
-                                      onTap: _uploading ? null : _pickMultiImages,
-                                      child: Container(
-                                        width: 100,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.surface,
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: Colors.white12),
-                                        ),
-                                        child: const Icon(Icons.add, color: AppColors.brand, size: 30),
-                                      ),
-                                    );
-                                  }
-
-                                  final img = _pickedImages[idx];
-                                  return Stack(
+                            _mode == BulkUploadMode.grouped
+                                ? ReorderableWrap(
+                                    spacing: 10,
+                                    runSpacing: 10,
+                                    needsLongPressDraggable: true,
+                                    onReorder: (oldIndex, newIndex) =>
+                                        setState(() {
+                                          final item = _pickedImages.removeAt(
+                                            oldIndex,
+                                          );
+                                          _pickedImages.insert(newIndex, item);
+                                        }),
                                     children: [
-                                      Container(
-                                        width: 100,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: Colors.white24),
-                                          image: DecorationImage(
-                                            image: MemoryImage(img.bytes),
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        top: 4,
-                                        right: 4,
-                                        child: GestureDetector(
-                                          onTap: _uploading ? null : () => _removeImage(idx),
-                                          child: const CircleAvatar(
-                                            radius: 12,
-                                            backgroundColor: Colors.black87,
-                                            child: Icon(Icons.close, size: 14, color: Colors.white),
-                                          ),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        bottom: 4,
-                                        left: 4,
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: Colors.black54,
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                          child: Text(
-                                            '#${idx + 1}',
-                                            style: const TextStyle(fontSize: 9, color: Colors.white),
-                                          ),
-                                        ),
-                                      ),
+                                      for (
+                                        var idx = 0;
+                                        idx < _pickedImages.length;
+                                        idx++
+                                      )
+                                        _reviewTile(idx),
+                                      _addPhotoTile(),
                                     ],
-                                  );
-                                },
-                              ),
-                            ),
+                                  )
+                                : SizedBox(
+                                    height: 120,
+                                    child: ListView.separated(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: _pickedImages.length + 1,
+                                      separatorBuilder: (context, index) =>
+                                          const SizedBox(width: 10),
+                                      itemBuilder: (context, idx) {
+                                        if (idx == _pickedImages.length) {
+                                          return GestureDetector(
+                                            onTap: _uploading
+                                                ? null
+                                                : _showPhotoSourceSheet,
+                                            child: Container(
+                                              width: 100,
+                                              decoration: BoxDecoration(
+                                                color: AppColors.surface,
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                border: Border.all(
+                                                  color: Colors.white12,
+                                                ),
+                                              ),
+                                              child: const Icon(
+                                                Icons.add,
+                                                color: AppColors.brand,
+                                                size: 30,
+                                              ),
+                                            ),
+                                          );
+                                        }
+
+                                        final img = _pickedImages[idx];
+                                        return Stack(
+                                          children: [
+                                            Container(
+                                              width: 100,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                border: Border.all(
+                                                  color: Colors.white24,
+                                                ),
+                                                image: DecorationImage(
+                                                  image: MemoryImage(img.bytes),
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                            ),
+                                            Positioned(
+                                              top: 4,
+                                              right: 4,
+                                              child: GestureDetector(
+                                                onTap: _uploading
+                                                    ? null
+                                                    : () => _removeImage(idx),
+                                                child: const CircleAvatar(
+                                                  radius: 12,
+                                                  backgroundColor:
+                                                      Colors.black87,
+                                                  child: Icon(
+                                                    Icons.close,
+                                                    size: 14,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Positioned(
+                                              bottom: 4,
+                                              left: 4,
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 5,
+                                                      vertical: 2,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.black54,
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                ),
+                                                child: Text(
+                                                  '#${idx + 1}',
+                                                  style: const TextStyle(
+                                                    fontSize: 9,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -364,7 +552,10 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                       // Mode Selector
                       const Text(
                         'Upload Structure',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                       const SizedBox(height: 10),
                       Row(
@@ -372,12 +563,15 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                           Expanded(
                             child: _ModeOptionCard(
                               title: 'Separate Cards',
-                              description: 'Each photo is its own individual design',
+                              description:
+                                  'Each photo is its own individual design',
                               icon: Icons.grid_view_rounded,
                               selected: _mode == BulkUploadMode.individual,
                               onTap: _uploading
                                   ? null
-                                  : () => setState(() => _mode = BulkUploadMode.individual),
+                                  : () => setState(
+                                      () => _mode = BulkUploadMode.individual,
+                                    ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -389,7 +583,9 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                               selected: _mode == BulkUploadMode.grouped,
                               onTap: _uploading
                                   ? null
-                                  : () => setState(() => _mode = BulkUploadMode.grouped),
+                                  : () => setState(
+                                      () => _mode = BulkUploadMode.grouped,
+                                    ),
                             ),
                           ),
                         ],
@@ -414,33 +610,8 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                             : (val) {
                                 setState(() => _selectedCategoryId = val);
                               },
-                        validator: (v) => v == null ? 'Please select a category' : null,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Price input
-                      TextFormField(
-                        key: const Key('bulk_price_field'),
-                        controller: _priceController,
-                        enabled: !_uploading,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: InputDecoration(
-                          labelText: _mode == BulkUploadMode.grouped
-                              ? 'Design Price (ETB) *'
-                              : 'Price per Design (ETB) *',
-                          prefixIcon: const Icon(Icons.payments_outlined),
-                          prefixText: 'ETB ',
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Please enter a price';
-                          }
-                          final parsed = double.tryParse(value.trim());
-                          if (parsed == null || parsed <= 0) {
-                            return 'Enter a valid positive price';
-                          }
-                          return null;
-                        },
+                        validator: (v) =>
+                            v == null ? 'Please select a category' : null,
                       ),
                       const SizedBox(height: 16),
 
@@ -463,16 +634,25 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                           decoration: BoxDecoration(
                             color: Colors.redAccent.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                            border: Border.all(
+                              color: Colors.redAccent.withValues(alpha: 0.3),
+                            ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
+                              const Icon(
+                                Icons.error_outline,
+                                color: Colors.redAccent,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   _errorMessage!,
-                                  style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                                  style: const TextStyle(
+                                    color: Colors.redAccent,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
                             ],
@@ -488,7 +668,9 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: LinearProgressIndicator(
-                                value: _uploadProgress > 0 ? _uploadProgress : null,
+                                value: _uploadProgress > 0
+                                    ? _uploadProgress
+                                    : null,
                                 minHeight: 8,
                                 backgroundColor: Colors.white12,
                                 color: AppColors.brand,
@@ -497,7 +679,10 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                             const SizedBox(height: 8),
                             Text(
                               _progressMessage ?? 'Uploading photos...',
-                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                           ],
@@ -511,7 +696,9 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                         onPressed: _uploading ? null : _submit,
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
                         child: _uploading
                             ? const Row(
@@ -520,7 +707,10 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                                   SizedBox(
                                     height: 20,
                                     width: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                   SizedBox(width: 12),
                                   Text('Publishing to Catalog...'),
@@ -530,7 +720,10 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                                 _mode == BulkUploadMode.grouped
                                     ? 'Publish Multi-Photo Design'
                                     : 'Publish ${_pickedImages.length} Designs',
-                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                       ),
                     ],
@@ -564,7 +757,9 @@ class _ModeOptionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: selected ? AppColors.brand.withValues(alpha: 0.15) : AppColors.surface,
+          color: selected
+              ? AppColors.brand.withValues(alpha: 0.15)
+              : AppColors.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: selected ? AppColors.brand : Colors.white12,
@@ -574,7 +769,11 @@ class _ModeOptionCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: selected ? AppColors.brand : Colors.grey, size: 24),
+            Icon(
+              icon,
+              color: selected ? AppColors.brand : Colors.grey,
+              size: 24,
+            ),
             const SizedBox(height: 8),
             Text(
               title,

@@ -187,9 +187,6 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Check preloaded price
-      expect(find.text('3200'), findsOneWidget);
-
       // Check preloaded tag
       expect(find.text('Silk Kemis'), findsOneWidget);
 
@@ -200,7 +197,7 @@ void main() {
       expect(find.text('Save Changes'), findsOneWidget);
     });
 
-    testWidgets('Edit screen allows editing price, tag, and submitting', (tester) async {
+    testWidgets('Edit screen allows editing tag and submitting', (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -224,9 +221,6 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Edit price
-      await tester.enterText(find.widgetWithText(TextFormField, '3200'), '4500');
-
       // Edit tag
       await tester.enterText(find.widgetWithText(TextFormField, 'Silk Kemis'), 'Golden Silk Wedding Kemis');
 
@@ -236,7 +230,7 @@ void main() {
 
       expect(repo.updateDesignCalled, isTrue);
       expect(repo.lastUpdatedDesignId, equals('design-123'));
-      expect(repo.lastUpdatedPrice, equals(4500.0));
+      expect(repo.lastUpdatedPrice, equals(0));
       expect(repo.lastUpdatedTag, equals('Golden Silk Wedding Kemis'));
     });
 

@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -6,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../auth/auth_repository.dart';
 import '../designs/design_repository.dart';
 import '../designs/models.dart';
+import 'photo_preview_screen.dart';
 
 class SingleDesignUploadScreen extends StatefulWidget {
   const SingleDesignUploadScreen({
@@ -20,12 +22,12 @@ class SingleDesignUploadScreen extends StatefulWidget {
   final String authUid;
 
   @override
-  State<SingleDesignUploadScreen> createState() => _SingleDesignUploadScreenState();
+  State<SingleDesignUploadScreen> createState() =>
+      _SingleDesignUploadScreenState();
 }
 
 class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _priceController = TextEditingController();
   final _tagController = TextEditingController();
   final _imagePicker = ImagePicker();
 
@@ -45,7 +47,6 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
 
   @override
   void dispose() {
-    _priceController.dispose();
     _tagController.dispose();
     super.dispose();
   }
@@ -82,6 +83,19 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
       );
       if (file != null) {
         final bytes = await file.readAsBytes();
+        if (!mounted) return;
+        if (source == ImageSource.camera) {
+          final accepted = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              fullscreenDialog: true,
+              builder: (_) => PhotoPreviewScreen(bytes: bytes, counter: null),
+            ),
+          );
+          if (accepted != true) {
+            await _pickImage(ImageSource.camera);
+            return;
+          }
+        }
         setState(() {
           _selectedImageBytes = bytes;
           _selectedImageName = file.name;
@@ -106,7 +120,10 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library_outlined, color: AppColors.brand),
+              leading: const Icon(
+                Icons.photo_library_outlined,
+                color: AppColors.brand,
+              ),
               title: const Text('Choose from Gallery'),
               onTap: () {
                 Navigator.of(ctx).pop();
@@ -114,7 +131,10 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt_outlined, color: AppColors.brand),
+              leading: const Icon(
+                Icons.camera_alt_outlined,
+                color: AppColors.brand,
+              ),
               title: const Text('Take a Photo'),
               onTap: () {
                 Navigator.of(ctx).pop();
@@ -140,12 +160,6 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
       return;
     }
 
-    final price = double.tryParse(_priceController.text.trim()) ?? 0.0;
-    if (price <= 0) {
-      setState(() => _errorMessage = 'Price must be greater than 0.');
-      return;
-    }
-
     setState(() {
       _uploading = true;
       _errorMessage = null;
@@ -155,10 +169,14 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
       final created = await widget.designRepository.createSingleDesign(
         tailorId: widget.tailorProfile.id,
         categoryId: _selectedCategoryId!,
-        price: price,
-        tag: _tagController.text.trim().isNotEmpty ? _tagController.text.trim() : null,
+        price: 0,
+        tag: _tagController.text.trim().isNotEmpty
+            ? _tagController.text.trim()
+            : null,
         imageBytes: _selectedImageBytes!,
-        filename: _selectedImageName ?? 'design_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        filename:
+            _selectedImageName ??
+            'design_${DateTime.now().millisecondsSinceEpoch}.jpg',
         authUid: widget.authUid,
       );
 
@@ -184,9 +202,7 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Upload Design'),
-      ),
+      appBar: AppBar(title: const Text('Upload Design')),
       body: SafeArea(
         child: _loadingCategories
             ? const Center(child: CircularProgressIndicator())
@@ -217,15 +233,24 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                               ? Stack(
                                   fit: StackFit.expand,
                                   children: [
-                                    Image.memory(_selectedImageBytes!, fit: BoxFit.cover),
+                                    Image.memory(
+                                      _selectedImageBytes!,
+                                      fit: BoxFit.cover,
+                                    ),
                                     Positioned(
                                       top: 12,
                                       right: 12,
                                       child: CircleAvatar(
                                         backgroundColor: Colors.black54,
                                         child: IconButton(
-                                          icon: const Icon(Icons.edit, color: Colors.white, size: 20),
-                                          onPressed: _uploading ? null : _showImageSourceDialog,
+                                          icon: const Icon(
+                                            Icons.edit,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                          onPressed: _uploading
+                                              ? null
+                                              : _showImageSourceDialog,
                                         ),
                                       ),
                                     ),
@@ -237,7 +262,9 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                                     Container(
                                       padding: const EdgeInsets.all(16),
                                       decoration: BoxDecoration(
-                                        color: AppColors.brand.withValues(alpha: 0.15),
+                                        color: AppColors.brand.withValues(
+                                          alpha: 0.15,
+                                        ),
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(
@@ -249,12 +276,17 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                                     const SizedBox(height: 12),
                                     const Text(
                                       'Tap to select design photo',
-                                      style: TextStyle(fontWeight: FontWeight.w600),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                     const SizedBox(height: 4),
                                     const Text(
                                       'JPEG or PNG up to 10MB',
-                                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -280,31 +312,8 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                             : (val) {
                                 setState(() => _selectedCategoryId = val);
                               },
-                        validator: (v) => v == null ? 'Please select a category' : null,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Price field
-                      TextFormField(
-                        key: const Key('price_field'),
-                        controller: _priceController,
-                        enabled: !_uploading,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(
-                          labelText: 'Price (ETB) *',
-                          prefixIcon: Icon(Icons.payments_outlined),
-                          prefixText: 'ETB ',
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Please enter a price';
-                          }
-                          final parsed = double.tryParse(value.trim());
-                          if (parsed == null || parsed <= 0) {
-                            return 'Enter a valid positive price';
-                          }
-                          return null;
-                        },
+                        validator: (v) =>
+                            v == null ? 'Please select a category' : null,
                       ),
                       const SizedBox(height: 16),
 
@@ -327,16 +336,25 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                           decoration: BoxDecoration(
                             color: Colors.redAccent.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                            border: Border.all(
+                              color: Colors.redAccent.withValues(alpha: 0.3),
+                            ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
+                              const Icon(
+                                Icons.error_outline,
+                                color: Colors.redAccent,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   _errorMessage!,
-                                  style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                                  style: const TextStyle(
+                                    color: Colors.redAccent,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
                             ],
@@ -351,7 +369,9 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                         onPressed: _uploading ? null : _submit,
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
                         child: _uploading
                             ? const Row(
@@ -360,7 +380,10 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                                   SizedBox(
                                     height: 20,
                                     width: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                   SizedBox(width: 12),
                                   Text('Uploading to Catalog...'),
@@ -368,7 +391,10 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                               )
                             : const Text(
                                 'Publish Design',
-                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                       ),
                     ],

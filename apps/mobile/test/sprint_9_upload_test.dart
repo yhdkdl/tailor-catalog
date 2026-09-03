@@ -203,11 +203,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Verify category, price, tag, and publish button are rendered
+      // Verify category, tag, and publish button are rendered
       expect(find.text('Upload Design'), findsOneWidget);
       expect(find.text('Tap to select design photo'), findsOneWidget);
       expect(find.text('Category *'), findsOneWidget);
-      expect(find.byKey(const Key('price_field')), findsOneWidget);
       expect(find.byKey(const Key('tag_field')), findsOneWidget);
       expect(find.byKey(const Key('publish_design_btn')), findsOneWidget);
 
@@ -258,7 +257,6 @@ void main() {
       // Verify shop name, approved badge, and design details
       expect(find.text('Bole Traditional Styles'), findsOneWidget);
       expect(find.text('Approved'), findsOneWidget);
-      expect(find.text('ETB 3500'), findsOneWidget);
       expect(find.text('Traditional Attire'), findsOneWidget);
       expect(find.text('#Gold Tilf'), findsOneWidget);
       expect(find.byKey(const Key('upload_fab')), findsOneWidget);

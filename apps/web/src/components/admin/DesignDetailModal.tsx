@@ -24,6 +24,7 @@ export interface AdminDesignItem {
   tailor_id: string;
   category_id: string;
   price: number;
+  is_trending?: boolean;
   tag: string | null;
   is_grouped: boolean;
   created_at: string;
@@ -187,9 +188,6 @@ export function DesignDetailModal({
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-500/15 text-brand-300 border border-brand-500/30">
                   {design.category?.name_en || 'Fashion Design'}
                 </span>
-                <h3 className="text-2xl font-bold text-white mt-2">
-                  {Number(design.price).toLocaleString()} ETB
-                </h3>
               </div>
 
               <button

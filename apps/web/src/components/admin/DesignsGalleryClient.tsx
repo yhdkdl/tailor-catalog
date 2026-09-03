@@ -16,7 +16,9 @@ import {
   Sparkles,
   AlertCircle,
   Loader2,
+  Flame,
 } from 'lucide-react';
+import { setDesignTrending } from '@/app/admin/actions';
 
 interface CategoryItem {
   id: string;
@@ -48,9 +50,23 @@ export function DesignsGalleryClient({
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedTailorId, setSelectedTailorId] = useState<string>(initialTailorId);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'price_desc' | 'price_asc'>('newest');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
   const [selectedDesign, setSelectedDesign] = useState<AdminDesignItem | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [trendingIds, setTrendingIds] = useState(() => new Set(initialDesigns.filter((d) => d.is_trending).map((d) => d.id)));
+
+  const handleTrending = async (e: React.MouseEvent, design: AdminDesignItem) => {
+    e.stopPropagation();
+    const next = !trendingIds.has(design.id);
+    const result = await setDesignTrending(design.id, next);
+    if (result.success) {
+      setTrendingIds((prev) => {
+        const updated = new Set(prev);
+        next ? updated.add(design.id) : updated.delete(design.id);
+        return updated;
+      });
+    }
+  };
 
   const getPhotoUrl = (photo?: { cloudinary_url: string | null; cloudinary_public_id: string | null }) => {
     if (!photo) return '';
@@ -98,15 +114,14 @@ export function DesignsGalleryClient({
           return false;
         }
 
-        // Search query (tag, price, tailor name)
+        // Search query (tag, tailor name)
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase().trim();
           const matchTag = design.tag ? design.tag.toLowerCase().includes(q) : false;
-          const matchPrice = design.price.toString().includes(q);
           const matchTailor = design.tailor?.shop_name
             ? design.tailor.shop_name.toLowerCase().includes(q)
             : false;
-          return matchTag || matchPrice || matchTailor;
+          return matchTag || matchTailor;
         }
 
         return true;
@@ -117,12 +132,6 @@ export function DesignsGalleryClient({
         }
         if (sortBy === 'oldest') {
           return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-        }
-        if (sortBy === 'price_desc') {
-          return Number(b.price) - Number(a.price);
-        }
-        if (sortBy === 'price_asc') {
-          return Number(a.price) - Number(b.price);
         }
         return 0;
       });
@@ -140,7 +149,7 @@ export function DesignsGalleryClient({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search tag, price, tailor..."
+              placeholder="Search tag or tailor..."
               className="w-full pl-10 pr-4 py-2 bg-surface-900/90 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition"
             />
           </div>
@@ -183,13 +192,11 @@ export function DesignsGalleryClient({
           <div className="relative">
             <select
               value={sortBy}
-              onChange={(e: any) => setSortBy(e.target.value)}
+              onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest')}
               className="w-full px-3 py-2 bg-surface-900/90 border border-slate-700/80 rounded-xl text-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/50 appearance-none cursor-pointer pr-8"
             >
               <option value="newest">Sort: Newest First</option>
               <option value="oldest">Sort: Oldest First</option>
-              <option value="price_desc">Sort: Price (High to Low)</option>
-              <option value="price_asc">Sort: Price (Low to High)</option>
             </select>
             <ArrowUpDown className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           </div>
@@ -254,6 +261,13 @@ export function DesignsGalleryClient({
                   )}
 
                   {/* Photo count indicator */}
+                  <button
+                    onClick={(e) => handleTrending(e, design)}
+                    className={`absolute top-3 left-3 p-1.5 rounded-full bg-black/70 ${trendingIds.has(design.id) ? 'text-amber-400' : 'text-slate-300'}`}
+                    title={trendingIds.has(design.id) ? 'Unmark as Trending' : 'Mark as Trending'}
+                  >
+                    <Flame className={`w-4 h-4 ${trendingIds.has(design.id) ? 'fill-amber-400' : ''}`} />
+                  </button>
                   {photoCount > 1 && (
                     <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-sm text-white text-[11px] font-semibold border border-white/10 flex items-center gap-1">
                       <Layers className="w-3 h-3" />
@@ -271,9 +285,6 @@ export function DesignsGalleryClient({
                 <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-lg font-bold text-white tracking-tight">
-                        {Number(design.price).toLocaleString()} ETB
-                      </span>
                       {design.tag && (
                         <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-surface-900 text-slate-300 border border-slate-700/60 truncate max-w-[110px]">
                           <TagIcon className="w-3 h-3 text-brand-400 flex-shrink-0" />

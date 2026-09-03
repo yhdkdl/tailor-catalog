@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Scissors, QrCode, Sparkles, Globe } from 'lucide-react';
+import { createClient } from '@/lib/supabase/server';
+import HomeTrendingPreview from '@/components/catalog/HomeTrendingPreview';
+import type { CatalogDesign } from '@/components/catalog/types';
 
 export const metadata: Metadata = {
   title: 'Tailor Catalog — Ethiopian Handcrafted Fashion',
@@ -8,7 +11,10 @@ export const metadata: Metadata = {
     'Discover beautiful handcrafted Ethiopian fashion. Scan a tailor\'s QR code to browse their full design catalog and try on outfits virtually.',
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient();
+  const { data: trendingData } = await supabase.from('designs').select('id, tailor_id, category_id, price, tag, is_grouped, is_trending, created_at, updated_at, category:categories(id, name_en, name_am, name_om, name_so, sort_order), photos:design_photos(id, cloudinary_public_id, cloudinary_url, order_index), tailor:tailors!inner(id, shop_name, shop_slug, status)').eq('tailor.status', 'approved').eq('is_trending', true).order('updated_at', { ascending: false }).range(0, 3);
+  const trending = (trendingData || []).map((d: any) => ({ ...d, category: Array.isArray(d.category) ? d.category[0] : d.category, photos: (d.photos || []).sort((a: any, b: any) => a.order_index - b.order_index) })) as CatalogDesign[];
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-slate-100 flex flex-col">
       {/* Header */}
@@ -18,6 +24,7 @@ export default function HomePage() {
           <span>Tailor Catalog</span>
         </div>
       </header>
+      <Link href="/marketplace" className="mx-auto rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-black">Browse Marketplace</Link>
 
       {/* Hero */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-16 text-center">
@@ -115,6 +122,7 @@ export default function HomePage() {
           </Link>
         </p>
       </main>
+      <HomeTrendingPreview designs={trending} />
 
       {/* Footer */}
       <footer className="p-5 text-center text-xs text-slate-600 border-t border-slate-800/60">

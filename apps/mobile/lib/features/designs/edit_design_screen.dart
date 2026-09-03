@@ -38,7 +38,6 @@ class EditDesignScreen extends StatefulWidget {
 
 class _EditDesignScreenState extends State<EditDesignScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _priceController;
   late final TextEditingController _tagController;
   final _imagePicker = ImagePicker();
 
@@ -57,9 +56,6 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
   @override
   void initState() {
     super.initState();
-    _priceController = TextEditingController(
-      text: widget.design.price.toStringAsFixed(0),
-    );
     _tagController = TextEditingController(
       text: widget.design.tag ?? '',
     );
@@ -70,7 +66,6 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
 
   @override
   void dispose() {
-    _priceController.dispose();
     _tagController.dispose();
     super.dispose();
   }
@@ -226,14 +221,6 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
       return;
     }
 
-    final price = double.tryParse(_priceController.text.trim());
-    if (price == null || price < 0) {
-      setState(() {
-        _errorMessage = 'Please enter a valid price.';
-      });
-      return;
-    }
-
     setState(() {
       _saving = true;
       _errorMessage = null;
@@ -244,7 +231,7 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
       final updatedDesign = await widget.designRepository.updateDesign(
         designId: widget.design.id,
         categoryId: _selectedCategoryId,
-        price: price,
+        price: 0,
         tag: _tagController.text.trim().isNotEmpty ? _tagController.text.trim() : null,
         existingPhotosToKeep: _existingPhotos,
         newImageBytesList: _newPhotos.map((p) => p.bytes).toList(),
@@ -354,32 +341,6 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
                       if (val != null) {
                         setState(() => _selectedCategoryId = val);
                       }
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Price Field
-                  const Text('Price (ETB)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _priceController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      prefixText: 'ETB  ',
-                      prefixStyle: const TextStyle(color: AppColors.brand, fontWeight: FontWeight.bold),
-                      hintText: 'e.g. 3500',
-                      filled: true,
-                      fillColor: AppColors.surface,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white12)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    ),
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) return 'Price is required';
-                      final p = double.tryParse(val.trim());
-                      if (p == null || p < 0) return 'Enter a valid positive price';
-                      return null;
                     },
                   ),
 

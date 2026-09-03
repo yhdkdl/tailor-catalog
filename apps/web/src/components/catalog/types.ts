@@ -28,6 +28,7 @@ export interface CatalogDesign {
   tailor_id: string;
   category_id: string;
   price: number;
+  is_trending?: boolean;
   tag: string | null;
   is_grouped: boolean;
   created_at: string;

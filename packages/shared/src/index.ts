@@ -12,9 +12,10 @@ export type Design = {
   id: string;
   tailor_id: string;
   category: string;
-  price: number;
+  price?: number;
   tag: string | null;
   photos: DesignPhoto[];
+  is_trending?: boolean;
   created_at: string;
 };
 

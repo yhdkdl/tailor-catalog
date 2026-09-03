@@ -5,7 +5,7 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { CatalogCategory } from './types';
 import { Search, ArrowUpDown, Filter, X, Sparkles } from 'lucide-react';
 
-export type SortOption = 'newest' | 'price_low' | 'price_high';
+export type SortOption = 'newest';
 
 interface CatalogFilterBarProps {
   categories: CatalogCategory[];
@@ -112,8 +112,6 @@ export function CatalogFilterBar({
             className="w-full sm:w-auto px-4 py-2.5 bg-surface-900/90 border border-slate-700/80 rounded-2xl text-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/40 appearance-none cursor-pointer pr-9 shadow-sm"
           >
             <option value="newest">{t('catalog.sort.newest')}</option>
-            <option value="price_low">{t('catalog.sort.price_low')}</option>
-            <option value="price_high">{t('catalog.sort.price_high')}</option>
           </select>
           <ArrowUpDown className="w-3.5 h-3.5 absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
         </div>

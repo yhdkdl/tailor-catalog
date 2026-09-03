@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { CatalogTailor, CatalogCategory, CatalogDesign } from './types';
 import { CatalogHeader } from './CatalogHeader';
@@ -14,12 +14,14 @@ interface CatalogViewClientProps {
   tailor: CatalogTailor;
   categories: CatalogCategory[];
   initialDesigns: CatalogDesign[];
+  initialDesignId?: string;
 }
 
 export function CatalogViewClient({
   tailor,
   categories,
   initialDesigns,
+  initialDesignId,
 }: CatalogViewClientProps) {
   const { t } = useLanguage();
 
@@ -28,6 +30,9 @@ export function CatalogViewClient({
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [selectedDesign, setSelectedDesign] = useState<CatalogDesign | null>(null);
   const [viewer360Design, setViewer360Design] = useState<CatalogDesign | null>(null);
+  useEffect(() => {
+    if (initialDesignId) setSelectedDesign(initialDesigns.find((d) => d.id === initialDesignId) || null);
+  }, [initialDesignId, initialDesigns]);
 
   // Filter and sort logic
   const filteredDesigns = useMemo(() => {
@@ -38,11 +43,10 @@ export function CatalogViewClient({
           return false;
         }
 
-        // Search query filter (tag or price)
+        // Search query filter (tag or category)
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase().trim();
           const matchTag = design.tag ? design.tag.toLowerCase().includes(q) : false;
-          const matchPrice = String(design.price).includes(q);
           const matchCategoryEn = design.category?.name_en.toLowerCase().includes(q) || false;
           const matchCategoryAm = design.category?.name_am?.toLowerCase().includes(q) || false;
           const matchCategoryOm = design.category?.name_om?.toLowerCase().includes(q) || false;
@@ -50,7 +54,6 @@ export function CatalogViewClient({
 
           return (
             matchTag ||
-            matchPrice ||
             matchCategoryEn ||
             matchCategoryAm ||
             matchCategoryOm ||
@@ -63,12 +66,6 @@ export function CatalogViewClient({
       .sort((a, b) => {
         if (sortBy === 'newest') {
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        }
-        if (sortBy === 'price_low') {
-          return Number(a.price) - Number(b.price);
-        }
-        if (sortBy === 'price_high') {
-          return Number(b.price) - Number(a.price);
         }
         return 0;
       });
@@ -110,6 +107,19 @@ export function CatalogViewClient({
           onResetFilters={handleResetFilters}
         />
 
+        {initialDesigns.some((design) => design.is_trending) && (
+          <section className="space-y-3">
+            <h3 className="text-lg font-bold text-white">{t('trending.title')}</h3>
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {initialDesigns.filter((design) => design.is_trending).slice(0, 6).map((design) => (
+                <div key={design.id} className="min-w-[180px] sm:min-w-[220px]">
+                  <DesignCard design={design} onInspect={setSelectedDesign} onView360={setViewer360Design} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Designs Grid */}
         {filteredDesigns.length === 0 ? (
           <div className="glass-panel rounded-3xl border border-slate-800/80 p-12 sm:p-16 text-center space-y-3">
@@ -132,7 +142,7 @@ export function CatalogViewClient({
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {filteredDesigns.map((design) => (
               <DesignCard
                 key={design.id}

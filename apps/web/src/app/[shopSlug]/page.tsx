@@ -11,6 +11,7 @@ interface PageProps {
   params: {
     shopSlug: string;
   };
+  searchParams?: { design?: string };
 }
 
 /**
@@ -90,7 +91,7 @@ function ShopNotPublished({ shopName, status }: { shopName: string; status: stri
   );
 }
 
-export default async function TailorCatalogPage({ params }: PageProps) {
+export default async function TailorCatalogPage({ params, searchParams }: PageProps) {
   const shopSlug = params.shopSlug;
 
   // Uses service role if SUPABASE_SERVICE_ROLE_KEY is set on the server,
@@ -156,6 +157,7 @@ export default async function TailorCatalogPage({ params }: PageProps) {
       price,
       tag,
       is_grouped,
+      is_trending,
       created_at,
       updated_at,
       category:categories(id, name_en, name_am, name_om, name_so, sort_order),
@@ -169,6 +171,7 @@ export default async function TailorCatalogPage({ params }: PageProps) {
     tailor_id: d.tailor_id,
     category_id: d.category_id,
     price: Number(d.price),
+    is_trending: d.is_trending ?? false,
     tag: d.tag,
     is_grouped: d.is_grouped,
     created_at: d.created_at,
@@ -184,6 +187,7 @@ export default async function TailorCatalogPage({ params }: PageProps) {
       tailor={tailor}
       categories={categories}
       initialDesigns={designs}
+      initialDesignId={searchParams?.design}
     />
   );
 }

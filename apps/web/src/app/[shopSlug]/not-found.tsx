@@ -39,13 +39,16 @@ export default function ShopNotFound() {
             </p>
           </div>
 
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
             <Link
               href="/"
               className="inline-flex items-center justify-center gap-2 w-full py-3 px-6 rounded-2xl bg-brand-500 hover:bg-brand-400 text-surface-950 font-bold text-xs transition shadow-lg shadow-brand-500/10 active:scale-98"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>{t('error.back_home')}</span>
+            </Link>
+            <Link href="/marketplace" className="inline-flex items-center justify-center gap-2 w-full py-3 px-6 rounded-2xl border border-slate-700 text-slate-200 font-bold text-xs transition">
+              {t('error.browse_all')}
             </Link>
           </div>
         </div>

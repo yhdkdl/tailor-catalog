@@ -15,6 +15,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { ShopQrModal } from './ShopQrModal';
+import Link from 'next/link';
+import { useFavorites } from '@/lib/favorites/FavoritesContext';
 
 interface CatalogHeaderProps {
   tailor: CatalogTailor;
@@ -24,6 +26,7 @@ export function CatalogHeader({ tailor }: CatalogHeaderProps) {
   const { t } = useLanguage();
   const [isQrOpen, setIsQrOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { count } = useFavorites();
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -73,6 +76,8 @@ export function CatalogHeader({ tailor }: CatalogHeaderProps) {
 
           {/* Right: Actions & Language Switcher */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            <Link href="/marketplace" className="hidden sm:inline text-xs text-slate-300 hover:text-white">{t('header.marketplace')}</Link>
+            <Link href="/favourites" className="text-xs text-brand-300 hover:text-brand-200">{t('header.favourites', { count })}</Link>
             {tailor.phone && (
               <a
                 href={`tel:${tailor.phone}`}

@@ -340,3 +340,21 @@ export async function deleteDesign(designId: string) {
     return { success: false, error: err.message || 'Internal server error' };
   }
 }
+
+export async function setDesignTrending(designId: string, isTrending: boolean) {
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from('designs')
+      .update({ is_trending: isTrending })
+      .eq('id', designId);
+
+    if (error) return { success: false, error: error.message };
+    revalidatePath('/admin/designs');
+    revalidatePath('/marketplace');
+    revalidatePath('/', 'layout');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Internal server error' };
+  }
+}

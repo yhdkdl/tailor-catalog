@@ -14,6 +14,7 @@ import {
   Sparkles,
   Shirt,
 } from 'lucide-react';
+import { ShareDesignModal } from './ShareDesignModal';
 
 interface CustomerDesignDetailModalProps {
   design: CatalogDesign | null;
@@ -33,6 +34,7 @@ export function CustomerDesignDetailModal({
   const { t, getCategoryName } = useLanguage();
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   // Touch swipe support
   const touchStartX = useRef<number | null>(null);
@@ -245,9 +247,6 @@ export function CustomerDesignDetailModal({
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-500/15 text-brand-300 border border-brand-500/30">
                   {categoryName || t('design.category')}
                 </span>
-                <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">
-                  {t('catalog.currency', { price: Number(design.price).toLocaleString() })}
-                </h3>
               </div>
 
               <button
@@ -297,19 +296,14 @@ export function CustomerDesignDetailModal({
                 </span>
               </div>
 
-              <div className="p-3 rounded-2xl bg-surface-900/60 border border-slate-800/80">
-                <span className="block text-slate-500 text-[10px] uppercase font-semibold">
-                  {t('design.price')}
-                </span>
-                <span className="text-brand-300 font-bold text-xs mt-0.5 block">
-                  {t('catalog.currency', { price: Number(design.price).toLocaleString() })}
-                </span>
-              </div>
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="pt-4 border-t border-slate-800/80 space-y-2">
+            <button onClick={() => setShareOpen(true)} className="w-full py-2.5 px-4 rounded-xl bg-surface-900 hover:bg-surface-800 border border-slate-700/60 text-slate-300 hover:text-white text-xs font-semibold transition">
+              {t('design.share')}
+            </button>
             <button
               onClick={() => {
                 onClose();
@@ -330,6 +324,7 @@ export function CustomerDesignDetailModal({
           </div>
         </div>
       </div>
+      <ShareDesignModal design={design} tailor={tailor} isOpen={shareOpen} onClose={() => setShareOpen(false)} />
     </div>
   );
 }
