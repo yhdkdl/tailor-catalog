@@ -5,12 +5,11 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { useFavorites } from '@/lib/favorites/FavoritesContext';
 import { CatalogDesign } from './types';
 import { getThumbnailUrl } from '@/lib/cloudinary';
-import { Layers, Tag, Eye, Sparkles, Heart, Flame, Store } from 'lucide-react';
+import { Layers, Tag, Heart, Flame, Store } from 'lucide-react';
 
 interface DesignCardProps {
   design: CatalogDesign;
   onInspect: (design: CatalogDesign) => void;
-  onView360: (design: CatalogDesign) => void;
   shopName?: string;
   shopSlug?: string;
 }
@@ -18,7 +17,6 @@ interface DesignCardProps {
 export function DesignCard({
   design,
   onInspect,
-  onView360,
   shopName,
   shopSlug,
 }: DesignCardProps) {
@@ -123,8 +121,8 @@ export function DesignCard({
         )}
       </div>
 
-      {/* Card Content & Action Bar */}
-      <div className="p-2.5 sm:p-3 space-y-2 flex-1 flex flex-col justify-between">
+      {/* Card Content */}
+      <div className="p-2.5 sm:p-3 space-y-2 flex-1">
         <div className="space-y-1">
           {/* Shop Name (for Marketplace) */}
           {shopName && (
@@ -147,30 +145,6 @@ export function DesignCard({
           )}
         </div>
 
-        {/* Bottom Actions */}
-        <div className="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-1.5">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onInspect(design);
-            }}
-            className="py-1.5 px-2 rounded-xl bg-surface-950 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white text-[11px] font-semibold flex items-center justify-center gap-1 transition"
-          >
-            <Eye className="w-3 h-3 text-slate-400" />
-            <span className="truncate">{t('design.view_details')}</span>
-          </button>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onView360(design);
-            }}
-            className="py-1.5 px-2 rounded-xl bg-brand-500/15 hover:bg-brand-500 text-brand-300 hover:text-surface-950 border border-brand-500/30 text-[11px] font-bold flex items-center justify-center gap-1 transition shadow-sm"
-          >
-            <Sparkles className="w-3 h-3" />
-            <span className="truncate">{t('design.view_360')}</span>
-          </button>
-        </div>
       </div>
     </div>
   );

@@ -113,7 +113,7 @@ export function CatalogViewClient({
             <div className="flex gap-3 overflow-x-auto pb-2">
               {initialDesigns.filter((design) => design.is_trending).slice(0, 6).map((design) => (
                 <div key={design.id} className="min-w-[180px] sm:min-w-[220px]">
-                  <DesignCard design={design} onInspect={setSelectedDesign} onView360={setViewer360Design} />
+                  <DesignCard design={design} onInspect={setSelectedDesign} />
                 </div>
               ))}
             </div>
@@ -148,7 +148,6 @@ export function CatalogViewClient({
                 key={design.id}
                 design={design}
                 onInspect={(d) => setSelectedDesign(d)}
-                onView360={(d) => setViewer360Design(d)}
               />
             ))}
           </div>

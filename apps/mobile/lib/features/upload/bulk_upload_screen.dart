@@ -235,6 +235,39 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
     );
   }
 
+  Widget _sourceOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: _uploading ? null : onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          height: 120,
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white12),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 32, color: AppColors.brand),
+              const SizedBox(height: 10),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _removeImage(int index) {
     setState(() {
       _pickedImages.removeAt(index);
@@ -375,56 +408,20 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                           ),
                           const SizedBox(height: 8),
                           if (_pickedImages.isEmpty)
-                            GestureDetector(
-                              onTap: _uploading ? null : _showPhotoSourceSheet,
-                              child: Container(
-                                height: 160,
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: Colors.white12,
-                                    width: 1.5,
-                                  ),
+                            Row(
+                              children: [
+                                _sourceOption(
+                                  icon: Icons.camera_alt_outlined,
+                                  label: 'Take Photo',
+                                  onTap: _pickCameraImage,
                                 ),
-                                child: Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(14),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.brand.withValues(
-                                            alpha: 0.15,
-                                          ),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.photo_library_outlined,
-                                          size: 32,
-                                          color: AppColors.brand,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      const Text(
-                                        'Tap to select multiple design photos',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      const Text(
-                                        'Select multiple photos from gallery',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                const SizedBox(width: 12),
+                                _sourceOption(
+                                  icon: Icons.photo_library_outlined,
+                                  label: 'Choose from Gallery',
+                                  onTap: _pickMultiImages,
                                 ),
-                              ),
+                              ],
                             )
                           else
                             _mode == BulkUploadMode.grouped

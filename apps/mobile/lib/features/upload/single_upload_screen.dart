@@ -147,6 +147,39 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
     );
   }
 
+  Widget _sourceOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: _uploading ? null : onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          height: 120,
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white12),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 32, color: AppColors.brand),
+              const SizedBox(height: 10),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _submit() async {
     if (_selectedImageBytes == null) {
       setState(() => _errorMessage = 'Please select a design photo.');
@@ -256,37 +289,20 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                                     ),
                                   ],
                                 )
-                              : Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                              : Row(
                                   children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(16),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.brand.withValues(
-                                          alpha: 0.15,
-                                        ),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.add_a_photo_outlined,
-                                        size: 36,
-                                        color: AppColors.brand,
-                                      ),
+                                    _sourceOption(
+                                      icon: Icons.camera_alt_outlined,
+                                      label: 'Take Photo',
+                                      onTap: () =>
+                                          _pickImage(ImageSource.camera),
                                     ),
-                                    const SizedBox(height: 12),
-                                    const Text(
-                                      'Tap to select design photo',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    const Text(
-                                      'JPEG or PNG up to 10MB',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
+                                    const SizedBox(width: 12),
+                                    _sourceOption(
+                                      icon: Icons.photo_library_outlined,
+                                      label: 'Choose from Gallery',
+                                      onTap: () =>
+                                          _pickImage(ImageSource.gallery),
                                     ),
                                   ],
                                 ),

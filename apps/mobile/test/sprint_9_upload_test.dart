@@ -205,7 +205,8 @@ void main() {
 
       // Verify category, tag, and publish button are rendered
       expect(find.text('Upload Design'), findsOneWidget);
-      expect(find.text('Tap to select design photo'), findsOneWidget);
+      expect(find.text('Take Photo'), findsOneWidget);
+      expect(find.text('Choose from Gallery'), findsOneWidget);
       expect(find.text('Category *'), findsOneWidget);
       expect(find.byKey(const Key('tag_field')), findsOneWidget);
       expect(find.byKey(const Key('publish_design_btn')), findsOneWidget);

@@ -301,7 +301,7 @@ export function CustomerDesignDetailModal({
 
           {/* Action Buttons */}
           <div className="pt-4 border-t border-slate-800/80 space-y-2">
-            <button onClick={() => setShareOpen(true)} className="w-full py-2.5 px-4 rounded-xl bg-surface-900 hover:bg-surface-800 border border-slate-700/60 text-slate-300 hover:text-white text-xs font-semibold transition">
+            <button onClick={() => setShareOpen(true)} className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-surface-950 font-bold text-sm shadow-xl shadow-brand-500/20 transition duration-200">
               {t('design.share')}
             </button>
             <button
@@ -309,7 +309,7 @@ export function CustomerDesignDetailModal({
                 onClose();
                 onView360(design);
               }}
-              className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-surface-950 font-bold text-sm shadow-xl shadow-brand-500/20 transition duration-200 flex items-center justify-center gap-2 active:scale-[0.99]"
+              className="w-full py-2.5 px-4 rounded-xl bg-surface-900 hover:bg-surface-800 border border-slate-700/60 text-slate-300 hover:text-white text-xs font-semibold transition flex items-center justify-center gap-2"
             >
               <Sparkles className="w-4 h-4" />
               <span>{t('design.view_360')}</span>
