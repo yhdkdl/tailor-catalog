@@ -12,6 +12,11 @@ import 'design_repository.dart';
 import 'edit_design_screen.dart';
 import 'models.dart';
 
+/// Global RouteObserver — register this in MaterialApp.navigatorObservers
+/// so DashboardScreen can detect when it becomes active again after a pop.
+final RouteObserver<ModalRoute<void>> dashboardRouteObserver =
+    RouteObserver<ModalRoute<void>>();
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
     required this.profile,
@@ -30,7 +35,8 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<DashboardScreen>
+    with RouteAware {
   late final OfflineSyncManager _syncManager;
   List<DesignItem> _designs = [];
   List<QueuedUploadItem> _pendingQueue = [];
@@ -47,11 +53,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Subscribe to the route observer so didPopNext fires when we come back.
+    final route = ModalRoute.of(context);
+    if (route is ModalRoute<void>) {
+      dashboardRouteObserver.subscribe(this, route);
+    }
+  }
+
+  @override
   void dispose() {
+    dashboardRouteObserver.unsubscribe(this);
     if (widget.syncManager == null) {
       _syncManager.dispose();
     }
     super.dispose();
+  }
+
+  /// Called when a sub-route is popped and this screen becomes visible again.
+  /// We evict the image cache and reload designs so cards never go black.
+  @override
+  void didPopNext() {
+    _evictAndReload();
+  }
+
+  Future<void> _evictAndReload() async {
+    // Evict every design image from the cache so Flutter re-fetches and
+    // re-paints them correctly after returning from a sub-screen.
+    for (final design in _designs) {
+      for (final photo in design.photos) {
+        final url = photo.thumbnailOptimizedUrl.isNotEmpty
+            ? photo.thumbnailOptimizedUrl
+            : photo.cloudinaryUrl;
+        if (url.isNotEmpty) {
+          await CachedNetworkImage.evictFromCache(url);
+        }
+      }
+    }
+    _loadDesigns();
   }
 
   Future<void> _loadDesigns() async {
@@ -268,12 +308,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             key: const Key('qr_icon_btn'),
             icon: const Icon(Icons.qr_code_2_outlined),
             tooltip: 'Store QR Code',
-            onPressed: () {
-              Navigator.of(context).push(
+            onPressed: () async {
+              await Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => QrScreen(profile: widget.profile),
                 ),
               );
+              // Reload in case RouteAware didn't fire (e.g. test environment).
+              if (mounted) _evictAndReload();
             },
           ),
           IconButton(
@@ -462,8 +504,10 @@ class _DesignCard extends StatelessWidget {
                         fadeInDuration: Duration.zero,
                         fadeOutDuration: Duration.zero,
                         placeholder: (ctx, url) => Container(
-                          color: Colors.black26,
-                          child: const Icon(Icons.image_outlined, color: Colors.white24),
+                          color: const Color(0xFF1A1A2E),
+                          child: const Center(
+                            child: Icon(Icons.image_outlined, color: Colors.white24, size: 32),
+                          ),
                         ),
                         errorWidget: (ctx, url, err) => const Center(
                           child: Icon(Icons.broken_image_outlined, color: Colors.grey),
