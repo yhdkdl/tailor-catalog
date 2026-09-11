@@ -136,7 +136,7 @@ void main() {
     email: 'tailor@example.com',
   );
 
-  final testDesign = DesignItem(
+  const testDesign = DesignItem(
     id: 'design-123',
     tailorId: 'tailor-1',
     categoryId: 'cat-1',
@@ -144,7 +144,7 @@ void main() {
     price: 3200,
     tag: 'Silk Kemis',
     isGrouped: false,
-    photos: const [
+    photos: [
       DesignPhotoItem(
         id: 'photo-1',
         designId: 'design-123',

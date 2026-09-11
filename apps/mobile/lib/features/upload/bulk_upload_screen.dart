@@ -194,7 +194,7 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
       width: 100,
       height: 120,
       child: GestureDetector(
-        onTap: _uploading ? null : _showPhotoSourceSheet,
+        onTap: _uploading ? null : _pickMultiImages,
         child: Container(
           decoration: BoxDecoration(
             color: AppColors.surface,
@@ -202,67 +202,6 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
             border: Border.all(color: Colors.white12),
           ),
           child: const Icon(Icons.add, color: AppColors.brand, size: 30),
-        ),
-      ),
-    );
-  }
-
-  void _showPhotoSourceSheet() {
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Take Photo'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _pickCameraImage();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Choose from Gallery'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _pickMultiImages();
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _sourceOption({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return Expanded(
-      child: InkWell(
-        onTap: _uploading ? null : onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          height: 120,
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white12),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 32, color: AppColors.brand),
-              const SizedBox(height: 10),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -397,7 +336,7 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                                 key: const Key('add_photos_btn'),
                                 onPressed: _uploading
                                     ? null
-                                    : _showPhotoSourceSheet,
+                                    : _pickMultiImages,
                                 icon: const Icon(
                                   Icons.add_photo_alternate_outlined,
                                   size: 18,
@@ -408,18 +347,37 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                           ),
                           const SizedBox(height: 8),
                           if (_pickedImages.isEmpty)
-                            Row(
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                _sourceOption(
-                                  icon: Icons.camera_alt_outlined,
-                                  label: 'Take Photo',
-                                  onTap: _pickCameraImage,
+                                // Primary: direct gallery multi-select
+                                FilledButton.icon(
+                                  onPressed: _uploading ? null : _pickMultiImages,
+                                  icon: const Icon(Icons.photo_library_outlined),
+                                  label: const Text(
+                                    'Select Photos from Gallery',
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  style: FilledButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
                                 ),
-                                const SizedBox(width: 12),
-                                _sourceOption(
-                                  icon: Icons.photo_library_outlined,
-                                  label: 'Choose from Gallery',
-                                  onTap: _pickMultiImages,
+                                const SizedBox(height: 10),
+                                // Secondary: camera
+                                OutlinedButton.icon(
+                                  onPressed: _uploading ? null : _pickCameraImage,
+                                  icon: const Icon(Icons.camera_alt_outlined),
+                                  label: const Text('Take Photo with Camera'),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    side: const BorderSide(color: Colors.white24),
+                                  ),
                                 ),
                               ],
                             )
@@ -458,7 +416,7 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                                           return GestureDetector(
                                             onTap: _uploading
                                                 ? null
-                                                : _showPhotoSourceSheet,
+                                                : _pickMultiImages,
                                             child: Container(
                                               width: 100,
                                               decoration: BoxDecoration(
