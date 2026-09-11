@@ -22,13 +22,20 @@ export function DesignCard({
 }: DesignCardProps) {
   const { t, getCategoryName } = useLanguage();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const [imageLoaded, setImageLoaded] = useState(false);
-
   const firstPhoto = design.photos?.[0];
   const photoCount = design.photos?.length || 0;
   const thumbnailUrl = getThumbnailUrl(firstPhoto);
   const categoryName = getCategoryName(design.category);
   const favorited = isFavorite(design.id);
+
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const imgRef = React.useRef<HTMLImageElement>(null);
+
+  React.useEffect(() => {
+    if (imgRef.current && imgRef.current.complete) {
+      setImageLoaded(true);
+    }
+  }, [thumbnailUrl]);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -53,22 +60,25 @@ export function DesignCard({
       className="glass-panel group rounded-2xl sm:rounded-3xl border border-slate-800/80 hover:border-brand-500/50 bg-surface-900/60 hover:bg-surface-900/90 overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-brand-500/5 transition-all duration-300 flex flex-col justify-between cursor-pointer"
     >
       {/* Image Container with Fixed Responsive Heights */}
-      <div className="relative h-[180px] sm:h-[160px] w-full bg-surface-950 overflow-hidden">
+      <div className="relative h-[180px] sm:h-[160px] w-full bg-slate-800/60 overflow-hidden">
         {/* Skeleton loader */}
         {!imageLoaded && (
-          <div className="absolute inset-0 bg-slate-900 animate-pulse flex items-center justify-center">
+          <div className="absolute inset-0 bg-slate-800 animate-pulse flex items-center justify-center pointer-events-none z-[1]">
             <div className="w-6 h-6 rounded-full border-2 border-brand-500/30 border-t-brand-500 animate-spin" />
           </div>
         )}
 
         {thumbnailUrl ? (
           <img
+            ref={imgRef}
             src={thumbnailUrl}
             alt={design.tag || categoryName || 'Handcrafted Design'}
             loading="lazy"
+            decoding="async"
             onLoad={() => setImageLoaded(true)}
-            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
+            onError={() => setImageLoaded(true)}
+            className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-300 ease-out ${
+              imageLoaded ? 'opacity-100' : 'opacity-90'
             }`}
           />
         ) : (
