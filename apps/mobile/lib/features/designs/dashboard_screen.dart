@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
@@ -79,14 +78,16 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// Called when a sub-route is popped and this screen becomes visible again.
   @override
   void didPopNext() {
-    _loadDesigns();
+    // Keep designs active without unmounting the grid
   }
 
-  Future<void> _loadDesigns() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  Future<void> _loadDesigns({bool showSpinner = false}) async {
+    if (showSpinner || _designs.isEmpty) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
 
     try {
       final list = await _syncManager.getTailorDesigns(widget.profile.id);
@@ -353,8 +354,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
     );
 
-    if (created != null) {
-      _loadDesigns();
+    if (created != null && mounted) {
+      setState(() {
+        _designs = [created, ..._designs];
+      });
     }
   }
 
@@ -369,8 +372,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
     );
 
-    if (result == true) {
-      _loadDesigns();
+    if (result == true && mounted) {
+      _loadDesigns(showSpinner: false);
     }
   }
 
@@ -475,13 +478,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                   key: const Key('qr_icon_btn'),
                   icon: const Icon(Icons.qr_code_2_outlined),
                   tooltip: 'Store QR Code',
-                  onPressed: () async {
-                    await Navigator.of(context).push(
+                  onPressed: () {
+                    Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => QrScreen(profile: widget.profile),
                       ),
                     );
-                    if (mounted) _loadDesigns();
                   },
                 ),
                 IconButton(
@@ -746,20 +748,23 @@ class _DesignCardState extends State<_DesignCard>
                 children: [
                   RepaintBoundary(
                     child: imageUrl.isNotEmpty
-                        ? CachedNetworkImage(
-                            key: ValueKey(imageUrl),
-                            imageUrl: imageUrl,
+                        ? Image.network(
+                            imageUrl,
                             fit: BoxFit.cover,
-                            fadeInDuration: const Duration(milliseconds: 150),
-                            memCacheWidth: 400,
-                            memCacheHeight: 600,
-                            placeholder: (ctx, url) => Container(
-                              color: Colors.white10,
-                              child: const Center(
-                                child: Icon(Icons.image_outlined, color: Colors.white24, size: 28),
-                              ),
-                            ),
-                            errorWidget: (ctx, url, err) => Container(
+                            cacheWidth: 400,
+                            cacheHeight: 600,
+                            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                              if (wasSynchronouslyLoaded || frame != null) {
+                                return child;
+                              }
+                              return Container(
+                                color: Colors.white10,
+                                child: const Center(
+                                  child: Icon(Icons.image_outlined, color: Colors.white24, size: 28),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) => Container(
                               color: Colors.white10,
                               child: const Center(
                                 child: Icon(Icons.broken_image_outlined, color: Colors.grey),
