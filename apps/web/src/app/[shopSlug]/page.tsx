@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { createAdminClient, createClient } from '@/lib/supabase/server';
 import { CatalogViewClient } from '@/components/catalog/CatalogViewClient';
 import { CatalogTailor, CatalogCategory, CatalogDesign } from '@/components/catalog/types';
+import { GracefulError } from '@/components/common/GracefulError';
 import { Store, Clock } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -110,8 +111,18 @@ export default async function TailorCatalogPage({ params, searchParams }: PagePr
 
   console.log(`[catalog] found=${!!tailorData} status=${tailorData?.status ?? 'N/A'} error=${tailorError?.message ?? 'none'}`);
 
-  // Slug doesn't exist at all
-  if (tailorError || !tailorData) {
+  // Connection/Database error when reaching Supabase
+  if (tailorError) {
+    console.error(`[catalog] Supabase error for slug="${shopSlug}":`, tailorError);
+    return (
+      <div className="min-h-screen bg-surface-950 flex items-center justify-center p-4">
+        <GracefulError />
+      </div>
+    );
+  }
+
+  // Slug genuinely doesn't exist
+  if (!tailorData) {
     console.log(`[catalog] 404 — tailor not found for slug="${shopSlug}"`);
     notFound();
   }

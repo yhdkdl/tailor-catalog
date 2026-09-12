@@ -124,6 +124,12 @@ export const translations = {
     'error.tailor_pending_desc': 'This tailor shop is currently undergoing verification by our team.',
     'error.back_home': 'Go to Homepage',
 
+    'error.unreachable_title': 'Service Temporarily Unavailable',
+    'error.unreachable_desc': 'Unable to connect to the database. Please check your connection or try again.',
+    'loading.catalog': 'Loading catalog...',
+    'loading.designs': 'Loading designs...',
+    'loading.marketplace': 'Loading marketplace...',
+
     // Common
     'common.loading': 'Loading...',
     'common.error': 'Something went wrong',
@@ -217,6 +223,12 @@ export const translations = {
     'error.tailor_pending': 'በማረጋገጥ ላይ ያለ ሱቅ',
     'error.tailor_pending_desc': 'ይህ የሰፊ ሱቅ በአስተዳዳሪው እየተረጋገጠ ነው።',
     'error.back_home': 'ወደ መነሻ ገጽ ተመለስ',
+
+    'error.unreachable_title': 'አገልግሎቱ ለጊዜው አልተገኘም',
+    'error.unreachable_desc': 'ከመረጃ ቋቱ ጋር መገናኘት አልተቻለም። እባክዎ ግንኙነትዎን ያረጋግጡና እንደገና ይሞክሩ።',
+    'loading.catalog': 'ካታሎግ በመጫን ላይ...',
+    'loading.designs': 'ዲዛይኖች በመጫን ላይ...',
+    'loading.marketplace': 'ገበያ በመጫን ላይ...',
 
     // Common
     'common.loading': 'በመጫን ላይ...',
@@ -312,6 +324,12 @@ export const translations = {
     'error.tailor_pending_desc': 'Suuqiin kun yeroo ammaa qoratamaa jira.',
     'error.back_home': 'Gara Fuula Jalqabaatti Deebi\'i',
 
+    'error.unreachable_title': 'Tajaajilli Yeroof Hin Argamne',
+    'error.unreachable_desc': 'Kuusaa daataa qunnamuun hin danda\'amne. Maaloo intarneetii keessan mirkaneessaa deebisaatii yaalaa.',
+    'loading.catalog': 'Kaataaloogii fe\'aa jira...',
+    'loading.designs': 'Dizaayiniiwwan fe\'aa jira...',
+    'loading.marketplace': 'Gabaa fe\'aa jira...',
+
     // Common
     'common.loading': 'Fe\'amaa jira...',
     'common.error': 'Dogoggorri uumameera',
@@ -405,6 +423,12 @@ export const translations = {
     'error.tailor_pending': 'Dukaanka Waa La Xaqiijinayaa',
     'error.tailor_pending_desc': 'Dukaankan hadda waxaa ku socda hubin rasmi ah.',
     'error.back_home': 'Ku Noqo Bogga Hore',
+
+    'error.unreachable_title': 'Adeeggu Si Ku Meel Gaar Ah Uma Heli Karo',
+    'error.unreachable_desc': 'Lama xiriiri karin keydka xogta. Fadlan hubi khadkaaga oo isku day mar kale.',
+    'loading.catalog': 'Soo dejinta buug-yaraha...',
+    'loading.designs': 'Soo dejinta naqshadaha...',
+    'loading.marketplace': 'Soo dejinta suuqa...',
 
     // Common
     'common.loading': 'Waa la soo gelinayaa...',
