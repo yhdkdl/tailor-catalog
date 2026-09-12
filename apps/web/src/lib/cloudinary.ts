@@ -7,14 +7,35 @@ export interface PhotoData {
   order_index?: number;
 }
 
+const FALLBACK_CLOUD_NAME = 'dsjb7ulyn';
+
+export function getMicroBlurUrl(photo?: PhotoData | null): string {
+  if (!photo) return '';
+
+  if (photo.cloudinary_public_id) {
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || FALLBACK_CLOUD_NAME;
+    return `https://res.cloudinary.com/${cloudName}/image/upload/w_30,h_30,c_fill,e_blur:1000,f_webp,q_10/${photo.cloudinary_public_id}`;
+  }
+
+  if (photo.cloudinary_url) {
+    if (photo.cloudinary_url.includes('/image/upload/')) {
+      return photo.cloudinary_url.replace(
+        '/image/upload/',
+        '/image/upload/w_30,h_30,c_fill,e_blur:1000,f_webp,q_10/'
+      );
+    }
+    return photo.cloudinary_url;
+  }
+
+  return '';
+}
+
 export function getThumbnailUrl(photo?: PhotoData | null): string {
   if (!photo) return '';
 
   if (photo.cloudinary_public_id) {
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    if (cloudName) {
-      return cloudinaryPresets.thumbnail(photo.cloudinary_public_id);
-    }
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || FALLBACK_CLOUD_NAME;
+    return cloudinaryPresets.thumbnail(photo.cloudinary_public_id);
   }
 
   if (photo.cloudinary_url) {

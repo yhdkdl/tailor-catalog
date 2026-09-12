@@ -111,9 +111,13 @@ export function CatalogViewClient({
           <section className="space-y-3">
             <h3 className="text-lg font-bold text-white">{t('trending.title')}</h3>
             <div className="flex gap-3 overflow-x-auto pb-2">
-              {initialDesigns.filter((design) => design.is_trending).slice(0, 6).map((design) => (
+              {initialDesigns.filter((design) => design.is_trending).slice(0, 6).map((design, index) => (
                 <div key={design.id} className="min-w-[180px] sm:min-w-[220px]">
-                  <DesignCard design={design} onInspect={setSelectedDesign} />
+                  <DesignCard
+                    design={design}
+                    priority={index < 2}
+                    onInspect={setSelectedDesign}
+                  />
                 </div>
               ))}
             </div>
@@ -143,10 +147,11 @@ export function CatalogViewClient({
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {filteredDesigns.map((design) => (
+            {filteredDesigns.map((design, index) => (
               <DesignCard
                 key={design.id}
                 design={design}
+                priority={index < 4}
                 onInspect={(d) => setSelectedDesign(d)}
               />
             ))}

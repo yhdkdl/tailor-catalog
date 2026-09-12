@@ -4,6 +4,7 @@ import { createAdminClient, createClient } from '@/lib/supabase/server';
 import { CatalogViewClient } from '@/components/catalog/CatalogViewClient';
 import { CatalogTailor, CatalogCategory, CatalogDesign } from '@/components/catalog/types';
 import { GracefulError } from '@/components/common/GracefulError';
+import { getThumbnailUrl } from '@/lib/cloudinary';
 import { Store, Clock } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -218,12 +219,23 @@ export default async function TailorCatalogPage({ params, searchParams }: PagePr
     ),
   }));
 
+  // Preload top 4 design thumbnails directly in document head for instant rendering
+  const preloadUrls = designs
+    .slice(0, 4)
+    .map((d) => getThumbnailUrl(d.photos?.[0]))
+    .filter(Boolean);
+
   return (
-    <CatalogViewClient
-      tailor={tailor}
-      categories={categories}
-      initialDesigns={designs}
-      initialDesignId={searchParams?.design}
-    />
+    <>
+      {preloadUrls.map((url) => (
+        <link key={url} rel="preload" as="image" href={url} fetchPriority="high" />
+      ))}
+      <CatalogViewClient
+        tailor={tailor}
+        categories={categories}
+        initialDesigns={designs}
+        initialDesignId={searchParams?.design}
+      />
+    </>
   );
 }

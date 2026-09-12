@@ -51,7 +51,8 @@ export const cloudinaryUrl = (
     .filter(Boolean)
     .join(',');
 
-  return `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${transforms}/${publicId}`;
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dsjb7ulyn';
+  return `https://res.cloudinary.com/${cloudName}/image/upload/${transforms}/${publicId}`;
 };
 
 export const cloudinaryPresets = {

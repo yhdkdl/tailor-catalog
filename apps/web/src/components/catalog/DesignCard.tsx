@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { useFavorites } from '@/lib/favorites/FavoritesContext';
 import { CatalogDesign } from './types';
-import { getThumbnailUrl } from '@/lib/cloudinary';
+import { getThumbnailUrl, getMicroBlurUrl } from '@/lib/cloudinary';
 import { Layers, Tag, Heart, Flame, Store } from 'lucide-react';
 
 interface DesignCardProps {
@@ -12,6 +12,7 @@ interface DesignCardProps {
   onInspect: (design: CatalogDesign) => void;
   shopName?: string;
   shopSlug?: string;
+  priority?: boolean;
 }
 
 export function DesignCard({
@@ -19,12 +20,14 @@ export function DesignCard({
   onInspect,
   shopName,
   shopSlug,
+  priority = false,
 }: DesignCardProps) {
   const { t, getCategoryName } = useLanguage();
   const { isFavorite, toggleFavorite } = useFavorites();
   const firstPhoto = design.photos?.[0];
   const photoCount = design.photos?.length || 0;
   const thumbnailUrl = getThumbnailUrl(firstPhoto);
+  const microBlurUrl = getMicroBlurUrl(firstPhoto);
   const categoryName = getCategoryName(design.category);
   const favorited = isFavorite(design.id);
 
@@ -60,9 +63,19 @@ export function DesignCard({
       className="glass-panel group rounded-2xl sm:rounded-3xl border border-slate-800/80 hover:border-brand-500/50 bg-surface-900/60 hover:bg-surface-900/90 overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-brand-500/5 transition-all duration-300 flex flex-col justify-between cursor-pointer"
     >
       {/* Image Container with Fixed Responsive Heights */}
-      <div className="relative h-[180px] sm:h-[160px] w-full bg-slate-800/60 overflow-hidden">
-        {/* Skeleton loader */}
-        {!imageLoaded && (
+      <div className="relative h-[180px] sm:h-[160px] w-full bg-slate-900 overflow-hidden">
+        {/* Instant Micro Blur Placeholder */}
+        {!imageLoaded && microBlurUrl && (
+          <img
+            src={microBlurUrl}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover filter blur-md scale-110 opacity-75 pointer-events-none z-0"
+          />
+        )}
+
+        {/* Pulse spinner if no blur placeholder or while initializing */}
+        {!imageLoaded && !microBlurUrl && (
           <div className="absolute inset-0 bg-slate-800 animate-pulse flex items-center justify-center pointer-events-none z-[1]">
             <div className="w-6 h-6 rounded-full border-2 border-brand-500/30 border-t-brand-500 animate-spin" />
           </div>
@@ -73,12 +86,13 @@ export function DesignCard({
             ref={imgRef}
             src={thumbnailUrl}
             alt={design.tag || categoryName || 'Handcrafted Design'}
-            loading="lazy"
-            decoding="async"
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            decoding={priority ? 'sync' : 'async'}
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageLoaded(true)}
-            className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-300 ease-out ${
-              imageLoaded ? 'opacity-100' : 'opacity-90'
+            className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-500 ease-out relative z-[1] ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
           />
         ) : (

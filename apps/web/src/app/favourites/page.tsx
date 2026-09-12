@@ -27,7 +27,7 @@ export default function FavouritesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {favorites.map((design) => {
+            {favorites.map((design, index) => {
               const thumbUrl = getThumbnailUrl({
                 cloudinary_url: design.cloudinary_url,
                 cloudinary_public_id: design.cloudinary_public_id,
@@ -41,8 +41,9 @@ export default function FavouritesPage() {
                   <img
                     src={thumbUrl}
                     alt={design.tag || design.category}
-                    loading="lazy"
-                    decoding="async"
+                    loading={index < 4 ? 'eager' : 'lazy'}
+                    fetchPriority={index < 4 ? 'high' : 'auto'}
+                    decoding={index < 4 ? 'sync' : 'async'}
                     className="h-[180px] w-full object-cover sm:h-[160px]"
                   />
                   <div className="flex items-center justify-between gap-2 p-3">
