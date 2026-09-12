@@ -177,13 +177,13 @@ SUPABASE_ANON_KEY=
 - [ ] 404 page shown for unknown shopSlug
 
 ### Phase 5 Checklist
-- [ ] All images load as WebP thumbnails
-- [ ] Lazy loading works on catalog page
-- [ ] No tailor can read another tailor's unpublished designs
-- [ ] Pending tailor designs not visible on public catalog
-- [ ] Rate limiting on image uploads
-- [ ] Skeleton loaders on all async content
-- [ ] Graceful error shown when Supabase is unreachable
+- [x] All images load as WebP thumbnails
+- [x] Lazy loading works on catalog page
+- [x] No tailor can read another tailor's unpublished designs
+- [x] Pending tailor designs not visible on public catalog
+- [x] Rate limiting on image uploads
+- [x] Skeleton loaders on all async content
+- [x] Graceful error shown when Supabase is unreachable
 - [ ] Sentry captures errors in both Next.js and Flutter
 - [ ] GitHub Actions runs lint on every PR
 - [ ] Auto deploy to Vercel on merge to develop
@@ -195,7 +195,7 @@ SUPABASE_ANON_KEY=
 - Phase 2: COMPLETE ✓
 - Phase 3: COMPLETE ✓
 - Phase 4: COMPLETE ✓
-- Phase 5: NOT STARTED
+- Phase 5: IN PROGRESS (Sprints 17, 18, 19 COMPLETE)
 
 ## Phase 3 Notes
 - Auth: email + password (OTP removed completely)
