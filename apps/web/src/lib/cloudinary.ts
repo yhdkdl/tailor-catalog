@@ -11,10 +11,8 @@ export function getThumbnailUrl(photo?: PhotoData | null): string {
   if (!photo) return '';
 
   if (photo.cloudinary_public_id) {
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    if (cloudName) {
-      return cloudinaryPresets.thumbnail(photo.cloudinary_public_id);
-    }
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dsjb7ulyn';
+    return cloudinaryPresets.thumbnail(photo.cloudinary_public_id);
   }
 
   if (photo.cloudinary_url) {
