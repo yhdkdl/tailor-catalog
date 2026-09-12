@@ -194,7 +194,7 @@ SUPABASE_ANON_KEY=
 - Phase 1: COMPLETE ✓
 - Phase 2: COMPLETE ✓
 - Phase 3: COMPLETE ✓
-- Phase 4: NOT STARTED
+- Phase 4: COMPLETE ✓
 - Phase 5: NOT STARTED
 
 ## Phase 3 Notes
@@ -202,6 +202,17 @@ SUPABASE_ANON_KEY=
 - Photos upload to Cloudinary directly from Flutter
 - cloudinary_url stored in design_photos table
 - Admin panel image display fixed to use cloudinary_url
-- QR code 404 is expected — resolves after Phase 4
 - Offline sync queue working via OfflineSyncManager
 - Session persists across app restarts
+
+## Phase 4 Notes
+- Tailor edit design screen: category, price, tag, add/remove/reorder photos
+- Bulk upload screen: multi-photo per design, Cloudinary upload, grouped flag
+- Dashboard: 2-column grid (3-col on wide screens), batch select & delete
+- Price removed from all UI (web catalog, mobile cards, upload screens)
+- Image glitch fix: replaced CachedNetworkImage with Image.network + frameBuilder to prevent black texture loss after navigation
+- Share design modal with QR code on customer catalog
+- Marketplace page + trending designs API
+- Favourites (local persistence) on customer catalog
+- i18n translation keys expanded
+- All 30 Flutter tests passing
