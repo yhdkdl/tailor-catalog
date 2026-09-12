@@ -14,6 +14,50 @@ class CloudinaryUploadResult {
   final String secureUrl;
 }
 
+class UploadRateLimitException implements Exception {
+  const UploadRateLimitException(this.message);
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
+/// In-memory sliding window rate limiter for client-side upload protection.
+class UploadRateLimiter {
+  UploadRateLimiter({
+    this.maxUploadsPerWindow = 30,
+    this.windowDuration = const Duration(minutes: 1),
+  });
+
+  final int maxUploadsPerWindow;
+  final Duration windowDuration;
+  final List<DateTime> _uploadTimestamps = [];
+
+  bool canUpload() {
+    _cleanOldTimestamps();
+    return _uploadTimestamps.length < maxUploadsPerWindow;
+  }
+
+  void checkAndRecordUpload() {
+    _cleanOldTimestamps();
+    if (_uploadTimestamps.length >= maxUploadsPerWindow) {
+      throw const UploadRateLimitException(
+        'Upload rate limit reached (maximum 30 uploads per minute). Please wait a moment before uploading more designs.',
+      );
+    }
+    _uploadTimestamps.add(DateTime.now());
+  }
+
+  void reset() {
+    _uploadTimestamps.clear();
+  }
+
+  void _cleanOldTimestamps() {
+    final now = DateTime.now();
+    _uploadTimestamps.removeWhere((ts) => now.difference(ts) > windowDuration);
+  }
+}
+
 abstract interface class CloudinaryService {
   Future<CloudinaryUploadResult> uploadImage({
     required Uint8List imageBytes,
@@ -26,9 +70,15 @@ abstract interface class CloudinaryService {
 }
 
 class HttpCloudinaryService implements CloudinaryService {
-  const HttpCloudinaryService({this.client});
+  const HttpCloudinaryService({
+    this.client,
+    this.rateLimiter,
+  });
+
+  static final UploadRateLimiter defaultRateLimiter = UploadRateLimiter();
 
   final http.Client? client;
+  final UploadRateLimiter? rateLimiter;
 
   @override
   Future<CloudinaryUploadResult> uploadImage({
@@ -37,6 +87,8 @@ class HttpCloudinaryService implements CloudinaryService {
     required String authUid,
     required String designId,
   }) async {
+    (rateLimiter ?? defaultRateLimiter).checkAndRecordUpload();
+
     final cloudName = AppConfig.cloudinaryCloudName;
     final uploadPreset = AppConfig.cloudinaryUploadPreset.trim();
 
