@@ -16,9 +16,12 @@ class AppConfig {
     'CLOUDINARY_UPLOAD_PRESET',
     defaultValue: 'tailor-designs',
   );
+  static const String sentryDsn = String.fromEnvironment('SENTRY_DSN');
 
   static bool get hasSupabase =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 
   static bool get hasCloudinary => cloudinaryCloudName.isNotEmpty;
+
+  static bool get hasSentry => sentryDsn.isNotEmpty;
 }

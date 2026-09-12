@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import { GracefulError } from '@/components/common/GracefulError';
 
 export default function RootError({
@@ -11,6 +12,7 @@ export default function RootError({
   reset: () => void;
 }) {
   useEffect(() => {
+    Sentry.captureException(error);
     console.error('Unhandled app error:', error);
   }, [error]);
 
