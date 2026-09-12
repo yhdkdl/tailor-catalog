@@ -216,3 +216,38 @@ SUPABASE_ANON_KEY=
 - Favourites (local persistence) on customer catalog
 - i18n translation keys expanded
 - All 30 Flutter tests passing
+
+## Phase 6 — Stock Photo Search (Current)
+
+### API Keys Location
+- dart_defines.json (local, never committed)
+- Keys: UNSPLASH_ACCESS_KEY, PEXELS_API_KEY, 
+  PIXABAY_API_KEY
+
+### Feature Spec
+- Third upload option: "Search Stock Photos"
+- Searches Unsplash + Pexels + Pixabay simultaneously
+- Results merged and shown in unified grid
+- Single tap: import one photo
+- Long press: enters multi-select mode
+- Multi-select: bulk import multiple photos
+- Each photo shows source attribution
+- Preview screen before import with attribution
+- Photo downloaded then uploaded to Cloudinary
+- Works for both single and grouped designs
+
+### API Rate Limits
+- Unsplash: 50 requests/hour
+- Pexels: 200 requests/hour  
+- Pixabay: 100 requests/hour
+- Search all three simultaneously
+- Cache results locally for 30 minutes
+  to avoid hitting rate limits
+
+### Attribution Requirements
+- Unsplash: REQUIRED by terms of service
+  Show: "Photo by [name] on Unsplash"
+- Pexels: REQUIRED
+  Show: "Photo by [name] on Pexels"  
+- Pixabay: Not required but good practice
+  Show: "Photo from Pixabay"
