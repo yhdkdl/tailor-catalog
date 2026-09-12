@@ -56,11 +56,40 @@ class DesignPhotoItem {
     );
   }
 
-  String get thumbnailOptimizedUrl =>
-      CloudinaryUrlHelper.buildUrl(cloudinaryPublicId, width: 400, height: 400);
+  String get thumbnailOptimizedUrl {
+    if (cloudinaryPublicId.isNotEmpty) {
+      return CloudinaryUrlHelper.buildUrl(
+        cloudinaryPublicId,
+        width: 400,
+        height: 400,
+        format: 'webp',
+      );
+    }
+    if (cloudinaryUrl.contains('/image/upload/')) {
+      return cloudinaryUrl.replaceFirst(
+        '/image/upload/',
+        '/image/upload/w_400,h_400,c_limit,f_webp,q_auto/',
+      );
+    }
+    return cloudinaryUrl;
+  }
 
-  String get catalogOptimizedUrl =>
-      CloudinaryUrlHelper.buildUrl(cloudinaryPublicId, width: 800);
+  String get catalogOptimizedUrl {
+    if (cloudinaryPublicId.isNotEmpty) {
+      return CloudinaryUrlHelper.buildUrl(
+        cloudinaryPublicId,
+        width: 800,
+        format: 'webp',
+      );
+    }
+    if (cloudinaryUrl.contains('/image/upload/')) {
+      return cloudinaryUrl.replaceFirst(
+        '/image/upload/',
+        '/image/upload/w_800,c_limit,f_webp,q_auto/',
+      );
+    }
+    return cloudinaryUrl;
+  }
 }
 
 class DesignItem {

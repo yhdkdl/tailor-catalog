@@ -72,11 +72,23 @@ export function DesignDetailModal({
   if (!isOpen || !design) return null;
 
   const photos = design.photos || [];
-  const getPhotoUrl = (photo: { cloudinary_url: string | null; cloudinary_public_id: string | null }) => {
-    if (photo.cloudinary_url) return photo.cloudinary_url;
+  const getPhotoUrl = (
+    photo: { cloudinary_url: string | null; cloudinary_public_id: string | null },
+    isThumb = false
+  ) => {
+    const transforms = isThumb
+      ? 'w_400,h_400,c_limit,f_webp,q_auto'
+      : 'w_800,c_limit,f_webp,q_auto';
+
     if (photo.cloudinary_public_id) {
       const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? 'tailor-catalog';
-      return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_800/${photo.cloudinary_public_id}`;
+      return `https://res.cloudinary.com/${cloudName}/image/upload/${transforms}/${photo.cloudinary_public_id}`;
+    }
+    if (photo.cloudinary_url) {
+      if (photo.cloudinary_url.includes('/image/upload/')) {
+        return photo.cloudinary_url.replace('/image/upload/', `/image/upload/${transforms}/`);
+      }
+      return photo.cloudinary_url;
     }
     return '';
   };
@@ -169,8 +181,10 @@ export function DesignDetailModal({
                   }`}
                 >
                   <img
-                    src={getPhotoUrl(photo)}
+                    src={getPhotoUrl(photo, true)}
                     alt={`Thumbnail ${index + 1}`}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 </button>

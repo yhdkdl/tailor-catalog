@@ -22,7 +22,7 @@ export function getThumbnailUrl(photo?: PhotoData | null): string {
     if (photo.cloudinary_url.includes('/image/upload/')) {
       return photo.cloudinary_url.replace(
         '/image/upload/',
-        '/image/upload/w_400,h_400,c_limit,f_auto,q_auto/'
+        '/image/upload/w_400,h_400,c_limit,f_webp,q_auto/'
       );
     }
     return photo.cloudinary_url;
@@ -45,7 +45,7 @@ export function getFullPhotoUrl(photo?: PhotoData | null): string {
     if (photo.cloudinary_url.includes('/image/upload/')) {
       return photo.cloudinary_url.replace(
         '/image/upload/',
-        '/image/upload/w_800,f_auto,q_auto/'
+        '/image/upload/w_800,c_limit,f_webp,q_auto/'
       );
     }
     return photo.cloudinary_url;

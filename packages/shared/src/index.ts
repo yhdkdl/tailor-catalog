@@ -54,10 +54,9 @@ export const cloudinaryUrl = (
   return `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${transforms}/${publicId}`;
 };
 
-// Preset sizes used across the app
 export const cloudinaryPresets = {
-  thumbnail: (id: string) => cloudinaryUrl(id, { width: 400, height: 400, quality: 'auto', format: 'auto' }),
-  catalog: (id: string) => cloudinaryUrl(id, { width: 800, quality: 'auto', format: 'auto' }),
+  thumbnail: (id: string) => cloudinaryUrl(id, { width: 400, height: 400, quality: 'auto', format: 'webp' }),
+  catalog: (id: string) => cloudinaryUrl(id, { width: 800, quality: 'auto', format: 'webp' }),
   full: (id: string) => cloudinaryUrl(id, { quality: 'auto', format: 'auto' }),
 };
 export type Tailor = {

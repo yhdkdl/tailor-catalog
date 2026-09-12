@@ -70,10 +70,18 @@ export function DesignsGalleryClient({
 
   const getPhotoUrl = (photo?: { cloudinary_url: string | null; cloudinary_public_id: string | null }) => {
     if (!photo) return '';
-    if (photo.cloudinary_url) return photo.cloudinary_url;
     if (photo.cloudinary_public_id) {
       const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? 'tailor-catalog';
-      return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_800/${photo.cloudinary_public_id}`;
+      return `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_400,c_limit,f_webp,q_auto/${photo.cloudinary_public_id}`;
+    }
+    if (photo.cloudinary_url) {
+      if (photo.cloudinary_url.includes('/image/upload/')) {
+        return photo.cloudinary_url.replace(
+          '/image/upload/',
+          '/image/upload/w_400,h_400,c_limit,f_webp,q_auto/'
+        );
+      }
+      return photo.cloudinary_url;
     }
     return '';
   };
@@ -251,6 +259,8 @@ export function DesignsGalleryClient({
                     <img
                       src={getPhotoUrl(firstPhoto)}
                       alt={design.tag || 'Design'}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                     />
                   ) : (
