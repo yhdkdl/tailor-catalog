@@ -1,0 +1,377 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Tailor Catalog",
+  "@appTitle": { "description": "Application title" },
+
+  "language": "Language",
+  "@language": { "description": "Language selector label" },
+
+  "english": "English",
+  "@english": {},
+
+  "amharic": "አማርኛ (Amharic)",
+  "@amharic": {},
+
+  "signIn": "Sign in",
+  "@signIn": { "description": "Sign in button label" },
+
+  "signInTitle": "Tailor sign in",
+  "@signInTitle": {},
+
+  "signInSubtitle": "Sign in to manage your design catalog.",
+  "@signInSubtitle": {},
+
+  "signingIn": "Signing in...",
+  "@signingIn": {},
+
+  "signOut": "Sign out",
+  "@signOut": {},
+
+  "email": "Email address",
+  "@email": {},
+
+  "password": "Password",
+  "@password": {},
+
+  "tryAgain": "Try again",
+  "@tryAgain": {},
+
+  "refreshStatus": "Refresh status",
+  "@refreshStatus": {},
+
+  "pendingApproval": "Waiting for approval",
+  "@pendingApproval": {},
+
+  "pendingApprovalBody": "Your account is pending approval. Please wait for the administrator to review and approve your account.",
+  "@pendingApprovalBody": {},
+
+  "accountNotApproved": "Account not approved",
+  "@accountNotApproved": {},
+
+  "rejectedBody": "Your account application was not approved. Please contact the administrator for more information.",
+  "@rejectedBody": {},
+
+  "uploadDesign": "Upload Design",
+  "@uploadDesign": {},
+
+  "singlePhotoDesign": "Single Photo Design",
+  "@singlePhotoDesign": {},
+
+  "singlePhotoSubtitle": "Upload one photo with category",
+  "@singlePhotoSubtitle": {},
+
+  "bulkUpload": "Bulk & Multi-Photo Upload",
+  "@bulkUpload": {},
+
+  "bulkUploadSubtitle": "Upload multiple photos or a grouped carousel",
+  "@bulkUploadSubtitle": {},
+
+  "deleteDesign": "Delete Design",
+  "@deleteDesign": {},
+
+  "deleteConfirm": "Are you sure you want to remove this design from your catalog?",
+  "@deleteConfirm": {},
+
+  "cancel": "Cancel",
+  "@cancel": {},
+
+  "delete": "Delete",
+  "@delete": {},
+
+  "category": "Category",
+  "@category": {},
+
+  "tagOptional": "Tag / Title (Optional)",
+  "@tagOptional": {},
+
+  "addPhotos": "Add Photos",
+  "@addPhotos": {},
+
+  "editDesign": "Edit Design",
+  "@editDesign": {},
+
+  "chooseFromGallery": "Choose from Gallery",
+  "@chooseFromGallery": {},
+
+  "takePhoto": "Take a Photo",
+  "@takePhoto": {},
+
+  "retake": "Retake",
+  "@retake": {},
+
+  "useThisPhoto": "Use This Photo",
+  "@useThisPhoto": {},
+
+  "storeQrCode": "Store QR Code",
+  "@storeQrCode": {},
+
+  "copyCatalogLink": "Copy Catalog Link",
+  "@copyCatalogLink": {},
+
+  "syncNow": "Sync now",
+  "@syncNow": {},
+
+  "tryAgainBtn": "Try Again",
+  "@tryAgainBtn": {},
+
+  "uploadFirstDesign": "Upload First Design",
+  "@uploadFirstDesign": {},
+
+  "bulkUploadTitle": "Bulk & Multi-Photo Upload",
+  "@bulkUploadTitle": {},
+
+  "takePhotoWithCamera": "Take Photo with Camera",
+  "@takePhotoWithCamera": {},
+
+  "back": "Back",
+  "@back": {},
+
+  "save": "Save",
+  "@save": {},
+
+  "saving": "Saving...",
+  "@saving": {},
+
+  "uploading": "Uploading...",
+  "@uploading": {},
+
+  "noDesignsYet": "No designs yet",
+  "@noDesignsYet": {},
+
+  "errorLoadingDesigns": "Could not load designs. Please try again.",
+  "@errorLoadingDesigns": {},
+
+  "pendingSync": "Pending sync",
+  "@pendingSync": {},
+
+  "batchDeleteConfirm": "Delete {count} design(s)?",
+  "@batchDeleteConfirm": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "selected": "{count} selected",
+  "@selected": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "selectPhotoRequired": "Please select a design photo.",
+  "@selectPhotoRequired": {},
+
+  "selectCategoryRequired": "Please select a category",
+  "@selectCategoryRequired": {},
+
+  "designUploadedSuccess": "Design uploaded successfully!",
+  "@designUploadedSuccess": {},
+
+  "optionalTagLabel": "Optional Tag / Accent",
+  "@optionalTagLabel": {},
+
+  "tagHint": "e.g. Silk Neckline, Wedding, Men Velvet",
+  "@tagHint": {},
+
+  "uploadingToCatalog": "Uploading to Catalog...",
+  "@uploadingToCatalog": {},
+
+  "publishDesign": "Publish Design",
+  "@publishDesign": {},
+
+  "selectedPhotosCount": "Selected Photos ({count})",
+  "@selectedPhotosCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "selectPhotosFromGallery": "Select Photos from Gallery",
+  "@selectPhotosFromGallery": {},
+
+  "uploadStructure": "Upload Structure",
+  "@uploadStructure": {},
+
+  "separateCards": "Separate Cards",
+  "@separateCards": {},
+
+  "separateCardsDescription": "Each photo is its own individual design",
+  "@separateCardsDescription": {},
+
+  "groupedCarousel": "Grouped Carousel",
+  "@groupedCarousel": {},
+
+  "groupedCarouselDescription": "All photos in one swipeable design",
+  "@groupedCarouselDescription": {},
+
+  "bulkTagLabel": "Optional Tag / Label",
+  "@bulkTagLabel": {},
+
+  "bulkTagHint": "e.g. Habesha Silk, Men Collection 2026",
+  "@bulkTagHint": {},
+
+  "publishingToCatalog": "Publishing to Catalog...",
+  "@publishingToCatalog": {},
+
+  "publishMultiPhotoDesign": "Publish Multi-Photo Design",
+  "@publishMultiPhotoDesign": {},
+
+  "publishBulkDesigns": "Publish {count} Designs",
+  "@publishBulkDesigns": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "selectAtLeastOnePhoto": "Please select at least one photo.",
+  "@selectAtLeastOnePhoto": {},
+
+  "multiPhotoSuccess": "Multi-photo design created successfully!",
+  "@multiPhotoSuccess": {},
+
+  "individualDesignsSuccess": "{count} individual designs created successfully!",
+  "@individualDesignsSuccess": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "couldNotReadPhoto": "Could not read selected photo.",
+  "@couldNotReadPhoto": {},
+
+  "failedToLoadCategories": "Failed to load categories",
+  "@failedToLoadCategories": {},
+
+  "couldNotSelectPhotos": "Could not select photos",
+  "@couldNotSelectPhotos": {},
+
+  "cameraCaptureFailed": "Camera capture failed",
+  "@cameraCaptureFailed": {},
+
+  "cover": "COVER",
+  "@cover": {},
+
+  "preparingPhotos": "Preparing {count} photos...",
+  "@preparingPhotos": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "uploadedPhotoProgress": "Uploaded photo {current} of {total} ({percent}%)",
+  "@uploadedPhotoProgress": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" },
+      "percent": { "type": "int" }
+    }
+  },
+
+  "uploadedDesignProgress": "Uploaded design {current} of {total} ({percent}%)",
+  "@uploadedDesignProgress": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" },
+      "percent": { "type": "int" }
+    }
+  },
+
+  "uploadingPhotos": "Uploading photos...",
+  "@uploadingPhotos": {},
+
+  "successfullySynced": "Successfully synced {count} queued design(s)!",
+  "@successfullySynced": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "designRemoved": "Design removed",
+  "@designRemoved": {},
+
+  "failedToDeleteDesign": "Failed to delete design",
+  "@failedToDeleteDesign": {},
+
+  "deleteEntireCatalog": "Delete Entire Catalog",
+  "@deleteEntireCatalog": {},
+
+  "deleteCountDesigns": "Delete {count} Designs",
+  "@deleteCountDesigns": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "deleteCount": "Delete ({count})",
+  "@deleteCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "allDesignsDeleted": "All {count} designs deleted from catalog",
+  "@allDesignsDeleted": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "successfullyDeletedCount": "Successfully deleted {count} design(s)",
+  "@successfullyDeletedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "deletedWithFailures": "Deleted {successCount} design(s). Failed to delete {failedCount}.",
+  "@deletedWithFailures": {
+    "placeholders": {
+      "successCount": { "type": "int" },
+      "failedCount": { "type": "int" }
+    }
+  },
+
+  "countSelected": "{count} Selected",
+  "@countSelected": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "deselectAll": "Deselect All",
+  "@deselectAll": {},
+
+  "selectAll": "Select All",
+  "@selectAll": {},
+
+  "deleteSelected": "Delete Selected",
+  "@deleteSelected": {},
+
+  "selectDesignsToDelete": "Select Designs to Delete",
+  "@selectDesignsToDelete": {},
+
+  "approved": "Approved",
+  "@approved": {},
+
+  "selectDesignsToDeleteBottom": "Select designs to delete",
+  "@selectDesignsToDeleteBottom": {},
+
+  "countOfTotalSelected": "{count} of {total} selected",
+  "@countOfTotalSelected": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "uploadsPending": "{count} upload(s) pending in offline queue.",
+  "@uploadsPending": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "designUpdatedSuccessfully": "Design updated successfully",
+  "@designUpdatedSuccessfully": {}
+}

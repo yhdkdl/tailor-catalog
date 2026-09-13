@@ -101,8 +101,6 @@ class HttpCloudinaryService implements CloudinaryService {
 
     request.fields['upload_preset'] = uploadPreset;
     request.fields['folder'] = 'tailor-designs/$authUid/$designId';
-    request.fields['eager'] = 'w_400,h_400,c_limit,f_webp,q_auto|w_800,c_limit,f_webp,q_auto';
-    request.fields['eager_async'] = 'true';
 
     final multipartFile = http.MultipartFile.fromBytes(
       'file',

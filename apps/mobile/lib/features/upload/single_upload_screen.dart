@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../auth/auth_repository.dart';
 import '../designs/design_repository.dart';
@@ -53,97 +54,93 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
 
   Future<void> _loadCategories() async {
     try {
-      final categories = await widget.designRepository.getCategories();
+      final cats = await widget.designRepository.getCategories();
       if (mounted) {
         setState(() {
-          _categories = categories;
-          if (categories.isNotEmpty) {
-            _selectedCategoryId = categories.first.id;
-          }
+          _categories = cats;
           _loadingCategories = false;
         });
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
-        setState(() {
-          _loadingCategories = false;
-          _errorMessage = 'Failed to load categories: $e';
-        });
+        setState(() => _loadingCategories = false);
       }
     }
   }
 
   Future<void> _pickImage(ImageSource source) async {
+    final l10n = AppLocalizations.of(context);
     try {
-      final file = await _imagePicker.pickImage(
+      final picked = await _imagePicker.pickImage(
         source: source,
-        maxWidth: 1920,
-        maxHeight: 1920,
         imageQuality: 85,
       );
-      if (file != null) {
-        final bytes = await file.readAsBytes();
-        if (!mounted) return;
-        if (source == ImageSource.camera) {
-          final accepted = await Navigator.of(context).push<bool>(
-            MaterialPageRoute(
-              fullscreenDialog: true,
-              builder: (_) => PhotoPreviewScreen(bytes: bytes, counter: null),
-            ),
-          );
-          if (accepted != true) {
-            await _pickImage(ImageSource.camera);
-            return;
-          }
-        }
+      if (picked == null) return;
+
+      final bytes = await picked.readAsBytes();
+      if (!mounted) return;
+
+      final confirmed = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (_) => PhotoPreviewScreen(
+            bytes: bytes,
+            counter: null,
+          ),
+        ),
+      );
+
+      if (confirmed == true && mounted) {
         setState(() {
           _selectedImageBytes = bytes;
-          _selectedImageName = file.name;
+          _selectedImageName = picked.name;
           _errorMessage = null;
         });
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Could not select photo: $e';
-      });
+      if (mounted) {
+        setState(() => _errorMessage = l10n.couldNotReadPhoto);
+      }
     }
   }
 
   void _showImageSourceDialog() {
+    final l10n = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(
-                Icons.photo_library_outlined,
-                color: AppColors.brand,
+      builder: (ctx) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(
+                  Icons.photo_library_outlined,
+                  color: AppColors.brand,
+                ),
+                title: Text(l10n.chooseFromGallery),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _pickImage(ImageSource.gallery);
+                },
               ),
-              title: const Text('Choose from Gallery'),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                _pickImage(ImageSource.gallery);
-              },
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.camera_alt_outlined,
-                color: AppColors.brand,
+              ListTile(
+                leading: const Icon(
+                  Icons.camera_alt_outlined,
+                  color: AppColors.brand,
+                ),
+                title: Text(l10n.takePhoto),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _pickImage(ImageSource.camera);
+                },
               ),
-              title: const Text('Take a Photo'),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                _pickImage(ImageSource.camera);
-              },
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -180,13 +177,13 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
     );
   }
 
-  Future<void> _submit() async {
+  Future<void> _submit(AppLocalizations l10n) async {
     if (_selectedImageBytes == null) {
-      setState(() => _errorMessage = 'Please select a design photo.');
+      setState(() => _errorMessage = l10n.selectPhotoRequired);
       return;
     }
     if (_selectedCategoryId == null) {
-      setState(() => _errorMessage = 'Please choose a category.');
+      setState(() => _errorMessage = l10n.selectCategoryRequired);
       return;
     }
     if (!_formKey.currentState!.validate()) {
@@ -215,8 +212,8 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Design uploaded successfully!'),
+          SnackBar(
+            content: Text(l10n.designUploadedSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -234,8 +231,11 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final langCode = Localizations.localeOf(context).languageCode;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Upload Design')),
+      appBar: AppBar(title: Text(l10n.uploadDesign)),
       body: SafeArea(
         child: _loadingCategories
             ? const Center(child: CircularProgressIndicator())
@@ -289,22 +289,25 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                                     ),
                                   ],
                                 )
-                              : Row(
-                                  children: [
-                                    _sourceOption(
-                                      icon: Icons.camera_alt_outlined,
-                                      label: 'Take Photo',
-                                      onTap: () =>
-                                          _pickImage(ImageSource.camera),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    _sourceOption(
-                                      icon: Icons.photo_library_outlined,
-                                      label: 'Choose from Gallery',
-                                      onTap: () =>
-                                          _pickImage(ImageSource.gallery),
-                                    ),
-                                  ],
+                              : Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    children: [
+                                      _sourceOption(
+                                        icon: Icons.camera_alt_outlined,
+                                        label: l10n.takePhoto,
+                                        onTap: () =>
+                                            _pickImage(ImageSource.camera),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      _sourceOption(
+                                        icon: Icons.photo_library_outlined,
+                                        label: l10n.chooseFromGallery,
+                                        onTap: () =>
+                                            _pickImage(ImageSource.gallery),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                         ),
                       ),
@@ -313,14 +316,14 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                       // Category Dropdown
                       DropdownButtonFormField<String>(
                         initialValue: _selectedCategoryId,
-                        decoration: const InputDecoration(
-                          labelText: 'Category *',
-                          prefixIcon: Icon(Icons.category_outlined),
+                        decoration: InputDecoration(
+                          labelText: '${l10n.category} *',
+                          prefixIcon: const Icon(Icons.category_outlined),
                         ),
                         items: _categories.map((cat) {
                           return DropdownMenuItem(
                             value: cat.id,
-                            child: Text(cat.localizedName),
+                            child: Text(cat.nameForLocale(langCode)),
                           );
                         }).toList(),
                         onChanged: _uploading
@@ -329,7 +332,7 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                                 setState(() => _selectedCategoryId = val);
                               },
                         validator: (v) =>
-                            v == null ? 'Please select a category' : null,
+                            v == null ? l10n.selectCategoryRequired : null,
                       ),
                       const SizedBox(height: 16),
 
@@ -338,10 +341,10 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                         key: const Key('tag_field'),
                         controller: _tagController,
                         enabled: !_uploading,
-                        decoration: const InputDecoration(
-                          labelText: 'Optional Tag / Accent',
-                          hintText: 'e.g. Silk Neckline, Wedding, Men Velvet',
-                          prefixIcon: Icon(Icons.tag_outlined),
+                        decoration: InputDecoration(
+                          labelText: l10n.optionalTagLabel,
+                          hintText: l10n.tagHint,
+                          prefixIcon: const Icon(Icons.tag_outlined),
                         ),
                       ),
 
@@ -382,7 +385,7 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                       // Submit button
                       FilledButton(
                         key: const Key('publish_design_btn'),
-                        onPressed: _uploading ? null : _submit,
+                        onPressed: _uploading ? null : () => _submit(l10n),
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
@@ -390,10 +393,10 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                           ),
                         ),
                         child: _uploading
-                            ? const Row(
+                            ? Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 20,
                                     width: 20,
                                     child: CircularProgressIndicator(
@@ -401,13 +404,13 @@ class _SingleDesignUploadScreenState extends State<SingleDesignUploadScreen> {
                                       color: Colors.white,
                                     ),
                                   ),
-                                  SizedBox(width: 12),
-                                  Text('Uploading to Catalog...'),
+                                  const SizedBox(width: 12),
+                                  Text(l10n.uploadingToCatalog),
                                 ],
                               )
-                            : const Text(
-                                'Publish Design',
-                                style: TextStyle(
+                            : Text(
+                                l10n.publishDesign,
+                                style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
                                 ),

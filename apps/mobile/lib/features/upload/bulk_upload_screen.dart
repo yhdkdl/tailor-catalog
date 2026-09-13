@@ -2,19 +2,22 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:reorderables/reorderables.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../auth/auth_repository.dart';
 import '../designs/design_repository.dart';
 import '../designs/models.dart';
 import 'photo_preview_screen.dart';
 
-import 'package:reorderables/reorderables.dart';
-
 enum BulkUploadMode { individual, grouped }
 
 class _PickedImageItem {
-  const _PickedImageItem({required this.bytes, required this.name});
+  const _PickedImageItem({
+    required this.bytes,
+    required this.name,
+  });
 
   final Uint8List bytes;
   final String name;
@@ -64,6 +67,7 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
   }
 
   Future<void> _loadCategories() async {
+    final l10n = AppLocalizations.of(context);
     try {
       final categories = await widget.designRepository.getCategories();
       if (mounted) {
@@ -79,13 +83,14 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
       if (mounted) {
         setState(() {
           _loadingCategories = false;
-          _errorMessage = 'Failed to load categories: $e';
+          _errorMessage = '${l10n.failedToLoadCategories}: $e';
         });
       }
     }
   }
 
   Future<void> _pickMultiImages() async {
+    final l10n = AppLocalizations.of(context);
     try {
       final files = await _imagePicker.pickMultiImage(
         maxWidth: 1920,
@@ -105,12 +110,13 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Could not select photos: $e';
+        _errorMessage = '${l10n.couldNotSelectPhotos}: $e';
       });
     }
   }
 
   Future<void> _pickCameraImage() async {
+    final l10n = AppLocalizations.of(context);
     try {
       final file = await _imagePicker.pickImage(
         source: ImageSource.camera,
@@ -126,7 +132,7 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
           fullscreenDialog: true,
           builder: (_) => PhotoPreviewScreen(
             bytes: bytes,
-            counter: 'Photo ${_pickedImages.length + 1}',
+            counter: '${l10n.takePhoto} ${_pickedImages.length + 1}',
           ),
         ),
       );
@@ -141,11 +147,45 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
         );
       }
     } catch (e) {
-      if (mounted) setState(() => _errorMessage = 'Camera capture failed: $e');
+      if (mounted) setState(() => _errorMessage = '${l10n.cameraCaptureFailed}: $e');
     }
   }
 
+  void _showAddPhotoOptions() {
+    final l10n = AppLocalizations.of(context);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined, color: AppColors.brand),
+              title: Text(l10n.chooseFromGallery),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                _pickMultiImages();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined, color: AppColors.brand),
+              title: Text(l10n.takePhoto),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                _pickCameraImage();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _reviewTile(int index) {
+    final l10n = AppLocalizations.of(context);
     final image = _pickedImages[index];
     return SizedBox(
       key: ValueKey('${image.name}-$index'),
@@ -155,8 +195,11 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
         children: [
           Positioned.fill(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.memory(image.bytes, fit: BoxFit.cover),
+              borderRadius: BorderRadius.circular(10),
+              child: Image.memory(
+                image.bytes,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           Positioned(
@@ -164,37 +207,51 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
             right: 4,
             child: GestureDetector(
               onTap: _uploading ? null : () => _removeImage(index),
-              child: const CircleAvatar(
-                radius: 12,
-                backgroundColor: Colors.black87,
-                child: Icon(Icons.close, size: 14, color: Colors.white),
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.black54,
+                  shape: BoxShape.circle,
+                ),
+                padding: const EdgeInsets.all(4),
+                child: const Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: 16,
+                ),
               ),
             ),
           ),
-          Positioned(
-            bottom: 4,
-            left: 4,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-              color: Colors.black54,
-              child: Text(
-                '#${index + 1}',
-                style: const TextStyle(fontSize: 9, color: Colors.white),
+          if (_mode == BulkUploadMode.grouped)
+            Positioned(
+              bottom: 4,
+              left: 4,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                decoration: BoxDecoration(
+                  color: index == 0 ? AppColors.brand : Colors.black54,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  index == 0 ? l10n.cover : '#${index + 1}',
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    color: index == 0 ? Colors.black : Colors.white,
+                  ),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _addPhotoTile() {
+  Widget _addMoreTile() {
     return SizedBox(
-      key: const ValueKey('add-photo'),
       width: 100,
       height: 120,
-      child: GestureDetector(
-        onTap: _uploading ? null : _pickMultiImages,
+      child: InkWell(
+        onTap: _uploading ? null : _showAddPhotoOptions,
         child: Container(
           decoration: BoxDecoration(
             color: AppColors.surface,
@@ -213,13 +270,13 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
     });
   }
 
-  Future<void> _submit() async {
+  Future<void> _submit(AppLocalizations l10n) async {
     if (_pickedImages.isEmpty) {
-      setState(() => _errorMessage = 'Please select at least one photo.');
+      setState(() => _errorMessage = l10n.selectAtLeastOnePhoto);
       return;
     }
     if (_selectedCategoryId == null) {
-      setState(() => _errorMessage = 'Please choose a category.');
+      setState(() => _errorMessage = l10n.selectCategoryRequired);
       return;
     }
     if (!_formKey.currentState!.validate()) {
@@ -229,7 +286,7 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
     setState(() {
       _uploading = true;
       _uploadProgress = 0.0;
-      _progressMessage = 'Preparing ${_pickedImages.length} photos...';
+      _progressMessage = l10n.preparingPhotos(_pickedImages.length);
       _errorMessage = null;
     });
 
@@ -252,8 +309,11 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
             if (mounted) {
               setState(() {
                 _uploadProgress = current / total;
-                _progressMessage =
-                    'Uploaded photo $current of $total (${(_uploadProgress * 100).toInt()}%)';
+                _progressMessage = l10n.uploadedPhotoProgress(
+                  current,
+                  total,
+                  (_uploadProgress * 100).toInt(),
+                );
               });
             }
           },
@@ -273,8 +333,11 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
             if (mounted) {
               setState(() {
                 _uploadProgress = current / total;
-                _progressMessage =
-                    'Uploaded design $current of $total (${(_uploadProgress * 100).toInt()}%)';
+                _progressMessage = l10n.uploadedDesignProgress(
+                  current,
+                  total,
+                  (_uploadProgress * 100).toInt(),
+                );
               });
             }
           },
@@ -286,8 +349,8 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
           SnackBar(
             content: Text(
               _mode == BulkUploadMode.grouped
-                  ? 'Multi-photo design created successfully!'
-                  : '${_pickedImages.length} individual designs created successfully!',
+                  ? l10n.multiPhotoSuccess
+                  : l10n.individualDesignsSuccess(_pickedImages.length),
             ),
             backgroundColor: Colors.green,
           ),
@@ -306,8 +369,11 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final langCode = Localizations.localeOf(context).languageCode;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Bulk & Multi-Photo Upload')),
+      appBar: AppBar(title: Text(l10n.bulkUploadTitle)),
       body: SafeArea(
         child: _loadingCategories
             ? const Center(child: CircularProgressIndicator())
@@ -326,7 +392,7 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Selected Photos (${_pickedImages.length})',
+                                l10n.selectedPhotosCount(_pickedImages.length),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
@@ -336,12 +402,12 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                                 key: const Key('add_photos_btn'),
                                 onPressed: _uploading
                                     ? null
-                                    : _pickMultiImages,
+                                    : _showAddPhotoOptions,
                                 icon: const Icon(
                                   Icons.add_photo_alternate_outlined,
                                   size: 18,
                                 ),
-                                label: const Text('Add Photos'),
+                                label: Text(l10n.addPhotos),
                               ),
                             ],
                           ),
@@ -354,9 +420,9 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                                 FilledButton.icon(
                                   onPressed: _uploading ? null : _pickMultiImages,
                                   icon: const Icon(Icons.photo_library_outlined),
-                                  label: const Text(
-                                    'Select Photos from Gallery',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  label: Text(
+                                    l10n.selectPhotosFromGallery,
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                   style: FilledButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -370,7 +436,7 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                                 OutlinedButton.icon(
                                   onPressed: _uploading ? null : _pickCameraImage,
                                   icon: const Icon(Icons.camera_alt_outlined),
-                                  label: const Text('Take Photo with Camera'),
+                                  label: Text(l10n.takePhotoWithCamera),
                                   style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(vertical: 14),
                                     shape: RoundedRectangleBorder(
@@ -401,7 +467,7 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                                         idx++
                                       )
                                         _reviewTile(idx),
-                                      _addPhotoTile(),
+                                      _addMoreTile(),
                                     ],
                                   )
                                 : SizedBox(
@@ -411,67 +477,13 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                                       itemCount: _pickedImages.length + 1,
                                       separatorBuilder: (context, index) =>
                                           const SizedBox(width: 10),
-                                      itemBuilder: (context, idx) {
+                                      itemBuilder: (ctx, idx) {
                                         if (idx == _pickedImages.length) {
-                                          return GestureDetector(
-                                            onTap: _uploading
-                                                ? null
-                                                : _pickMultiImages,
-                                            child: Container(
-                                              width: 100,
-                                              decoration: BoxDecoration(
-                                                color: AppColors.surface,
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                border: Border.all(
-                                                  color: Colors.white12,
-                                                ),
-                                              ),
-                                              child: const Icon(
-                                                Icons.add,
-                                                color: AppColors.brand,
-                                                size: 30,
-                                              ),
-                                            ),
-                                          );
+                                          return _addMoreTile();
                                         }
-
-                                        final img = _pickedImages[idx];
                                         return Stack(
                                           children: [
-                                            Container(
-                                              width: 100,
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                border: Border.all(
-                                                  color: Colors.white24,
-                                                ),
-                                                image: DecorationImage(
-                                                  image: MemoryImage(img.bytes),
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              ),
-                                            ),
-                                            Positioned(
-                                              top: 4,
-                                              right: 4,
-                                              child: GestureDetector(
-                                                onTap: _uploading
-                                                    ? null
-                                                    : () => _removeImage(idx),
-                                                child: const CircleAvatar(
-                                                  radius: 12,
-                                                  backgroundColor:
-                                                      Colors.black87,
-                                                  child: Icon(
-                                                    Icons.close,
-                                                    size: 14,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
+                                            _reviewTile(idx),
                                             Positioned(
                                               bottom: 4,
                                               left: 4,
@@ -505,9 +517,9 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                       const SizedBox(height: 24),
 
                       // Mode Selector
-                      const Text(
-                        'Upload Structure',
-                        style: TextStyle(
+                      Text(
+                        l10n.uploadStructure,
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
@@ -517,9 +529,8 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                         children: [
                           Expanded(
                             child: _ModeOptionCard(
-                              title: 'Separate Cards',
-                              description:
-                                  'Each photo is its own individual design',
+                              title: l10n.separateCards,
+                              description: l10n.separateCardsDescription,
                               icon: Icons.grid_view_rounded,
                               selected: _mode == BulkUploadMode.individual,
                               onTap: _uploading
@@ -532,8 +543,8 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _ModeOptionCard(
-                              title: 'Grouped Carousel',
-                              description: 'All photos in one swipeable design',
+                              title: l10n.groupedCarousel,
+                              description: l10n.groupedCarouselDescription,
                               icon: Icons.view_carousel_rounded,
                               selected: _mode == BulkUploadMode.grouped,
                               onTap: _uploading
@@ -550,14 +561,14 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                       // Category Dropdown
                       DropdownButtonFormField<String>(
                         initialValue: _selectedCategoryId,
-                        decoration: const InputDecoration(
-                          labelText: 'Category *',
-                          prefixIcon: Icon(Icons.category_outlined),
+                        decoration: InputDecoration(
+                          labelText: '${l10n.category} *',
+                          prefixIcon: const Icon(Icons.category_outlined),
                         ),
                         items: _categories.map((cat) {
                           return DropdownMenuItem(
                             value: cat.id,
-                            child: Text(cat.localizedName),
+                            child: Text(cat.nameForLocale(langCode)),
                           );
                         }).toList(),
                         onChanged: _uploading
@@ -566,7 +577,7 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                                 setState(() => _selectedCategoryId = val);
                               },
                         validator: (v) =>
-                            v == null ? 'Please select a category' : null,
+                            v == null ? l10n.selectCategoryRequired : null,
                       ),
                       const SizedBox(height: 16),
 
@@ -575,10 +586,10 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                         key: const Key('bulk_tag_field'),
                         controller: _tagController,
                         enabled: !_uploading,
-                        decoration: const InputDecoration(
-                          labelText: 'Optional Tag / Label',
-                          hintText: 'e.g. Habesha Silk, Men Collection 2026',
-                          prefixIcon: Icon(Icons.tag_outlined),
+                        decoration: InputDecoration(
+                          labelText: l10n.bulkTagLabel,
+                          hintText: l10n.bulkTagHint,
+                          prefixIcon: const Icon(Icons.tag_outlined),
                         ),
                       ),
 
@@ -633,7 +644,7 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              _progressMessage ?? 'Uploading photos...',
+                              _progressMessage ?? l10n.uploadingPhotos,
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
@@ -648,7 +659,7 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                       // Submit button
                       FilledButton(
                         key: const Key('publish_bulk_btn'),
-                        onPressed: _uploading ? null : _submit,
+                        onPressed: _uploading ? null : () => _submit(l10n),
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
@@ -656,10 +667,10 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                           ),
                         ),
                         child: _uploading
-                            ? const Row(
+                            ? Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 20,
                                     width: 20,
                                     child: CircularProgressIndicator(
@@ -667,14 +678,14 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
                                       color: Colors.white,
                                     ),
                                   ),
-                                  SizedBox(width: 12),
-                                  Text('Publishing to Catalog...'),
+                                  const SizedBox(width: 12),
+                                  Text(l10n.publishingToCatalog),
                                 ],
                               )
                             : Text(
                                 _mode == BulkUploadMode.grouped
-                                    ? 'Publish Multi-Photo Design'
-                                    : 'Publish ${_pickedImages.length} Designs',
+                                    ? l10n.publishMultiPhotoDesign
+                                    : l10n.publishBulkDesigns(_pickedImages.length),
                                 style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,

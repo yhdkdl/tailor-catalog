@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 
 class PhotoPreviewScreen extends StatelessWidget {
@@ -16,6 +17,7 @@ class PhotoPreviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -51,7 +53,7 @@ class PhotoPreviewScreen extends StatelessWidget {
                         side: const BorderSide(color: Colors.white),
                         padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
-                      child: const Text('Retake'),
+                      child: Text(l10n.retake),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -63,7 +65,7 @@ class PhotoPreviewScreen extends StatelessWidget {
                         foregroundColor: Colors.black,
                         padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
-                      child: const Text('Use This Photo'),
+                      child: Text(l10n.useThisPhoto),
                     ),
                   ),
                 ],

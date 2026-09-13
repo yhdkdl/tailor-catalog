@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/app_localizations.dart';
+import '../../core/locale/language_toggle.dart';
+import '../../core/locale/locale_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../auth/auth_repository.dart';
 import '../offline/offline_service.dart';
@@ -20,6 +23,7 @@ class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
     required this.profile,
     required this.designRepository,
+    this.localeProvider,
     this.syncManager,
     required this.onSignOut,
     super.key,
@@ -27,6 +31,7 @@ class DashboardScreen extends StatefulWidget {
 
   final TailorProfile profile;
   final DesignRepository designRepository;
+  final LocaleProvider? localeProvider;
   final OfflineSyncManager? syncManager;
   final Future<void> Function() onSignOut;
 
@@ -115,13 +120,14 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _syncPendingUploads() async {
+    final l10n = AppLocalizations.of(context);
     setState(() => _isSyncing = true);
     final res = await _syncManager.processQueue();
     if (mounted) {
       setState(() => _isSyncing = false);
       if (res.succeededCount > 0) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Successfully synced ${res.succeededCount} queued design(s)!'), backgroundColor: Colors.green),
+          SnackBar(content: Text(l10n.successfullySynced(res.succeededCount)), backgroundColor: Colors.green),
         );
       }
       _loadDesigns();
@@ -159,21 +165,22 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _deleteDesign(DesignItem design) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text('Delete Design'),
-        content: const Text('Are you sure you want to remove this design from your catalog?'),
+        title: Text(l10n.deleteDesign),
+        content: Text(l10n.deleteConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Delete'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -188,13 +195,13 @@ class _DashboardScreenState extends State<DashboardScreen>
         });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Design removed')),
+            SnackBar(content: Text(l10n.designRemoved)),
           );
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete design: $e')),
+            SnackBar(content: Text('${l10n.failedToDeleteDesign}: $e')),
           );
         }
       }
@@ -202,6 +209,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _deleteSelectedDesigns() async {
+    final l10n = AppLocalizations.of(context);
     if (_selectedIds.isEmpty) return;
 
     final count = _selectedIds.length;
@@ -211,7 +219,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: Text(isAll ? 'Delete Entire Catalog' : 'Delete $count Designs'),
+        title: Text(isAll ? l10n.deleteEntireCatalog : l10n.deleteCountDesigns(count)),
         content: Text(
           isAll
               ? 'Are you sure you want to delete ALL $count designs from your catalog? This action cannot be undone.'
@@ -220,13 +228,13 @@ class _DashboardScreenState extends State<DashboardScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             key: const Key('confirm_batch_delete_dialog_btn'),
             style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text('Delete ($count)'),
+            child: Text(l10n.deleteCount(count)),
           ),
         ],
       ),
@@ -257,13 +265,14 @@ class _DashboardScreenState extends State<DashboardScreen>
         _isSelectionMode = false;
       });
 
+      final l10n = AppLocalizations.of(context);
       if (failedIds.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               isAll
-                  ? 'All $count designs deleted from catalog'
-                  : 'Successfully deleted $successCount design(s)',
+                  ? l10n.allDesignsDeleted(count)
+                  : l10n.successfullyDeletedCount(successCount),
             ),
             backgroundColor: Colors.green,
           ),
@@ -272,7 +281,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Deleted $successCount design(s). Failed to delete ${failedIds.length}.',
+              l10n.deletedWithFailures(successCount, failedIds.length),
             ),
             backgroundColor: Colors.orange,
           ),
@@ -282,6 +291,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _editDesign(DesignItem design) async {
+    final l10n = AppLocalizations.of(context);
     final updated = await Navigator.of(context).push<DesignItem>(
       MaterialPageRoute(
         builder: (_) => EditDesignScreen(
@@ -301,8 +311,8 @@ class _DashboardScreenState extends State<DashboardScreen>
         }
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Design updated successfully'),
+        SnackBar(
+          content: Text(l10n.designUpdatedSuccessfully),
           backgroundColor: Colors.green,
         ),
       );
@@ -316,30 +326,33 @@ class _DashboardScreenState extends State<DashboardScreen>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.add_photo_alternate_outlined, color: AppColors.brand),
-              title: const Text('Single Photo Design', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text('Upload one photo with category'),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                _navigateToSingleUpload();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined, color: AppColors.brand),
-              title: const Text('Bulk & Multi-Photo Upload', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text('Upload multiple photos or a grouped carousel'),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                _navigateToBulkUpload();
-              },
-            ),
-          ],
-        ),
-      ),
+      builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx);
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.add_photo_alternate_outlined, color: AppColors.brand),
+                title: Text(l10n.singlePhotoDesign, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(l10n.singlePhotoSubtitle),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _navigateToSingleUpload();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined, color: AppColors.brand),
+                title: Text(l10n.bulkUpload, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(l10n.bulkUploadSubtitle),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _navigateToBulkUpload();
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -379,13 +392,14 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         leading: _isSelectionMode
             ? IconButton(
                 key: const Key('cancel_selection_btn'),
                 icon: const Icon(Icons.close),
-                tooltip: 'Cancel',
+                tooltip: l10n.cancel,
                 onPressed: () {
                   setState(() {
                     _isSelectionMode = false;
@@ -396,7 +410,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             : null,
         title: _isSelectionMode
             ? Text(
-                '${_selectedIds.length} Selected',
+                l10n.countSelected(_selectedIds.length),
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               )
             : Row(
@@ -418,9 +432,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(color: Colors.green.withValues(alpha: 0.4)),
                           ),
-                          child: const Text(
-                            'Approved',
-                            style: TextStyle(fontSize: 10, color: Colors.greenAccent, fontWeight: FontWeight.w600),
+                          child: Text(
+                            l10n.approved,
+                            style: const TextStyle(fontSize: 10, color: Colors.greenAccent, fontWeight: FontWeight.w600),
                           ),
                         ),
                       ],
@@ -442,8 +456,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                   label: Text(
                     _selectedIds.length == _designs.length && _designs.isNotEmpty
-                        ? 'Deselect All'
-                        : 'Select All',
+                        ? l10n.deselectAll
+                        : l10n.selectAll,
                     style: const TextStyle(
                       color: AppColors.brand,
                       fontWeight: FontWeight.bold,
@@ -460,7 +474,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           child: CircularProgressIndicator(strokeWidth: 2, color: Colors.redAccent),
                         )
                       : const Icon(Icons.delete, color: Colors.redAccent),
-                  tooltip: 'Delete Selected',
+                  tooltip: l10n.deleteSelected,
                   onPressed: _selectedIds.isEmpty || _isDeletingBatch
                       ? null
                       : _deleteSelectedDesigns,
@@ -471,7 +485,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   IconButton(
                     key: const Key('enter_selection_btn'),
                     icon: const Icon(Icons.checklist_rtl_outlined),
-                    tooltip: 'Select Designs to Delete',
+                    tooltip: l10n.selectDesignsToDelete,
                     onPressed: _toggleSelectionMode,
                   ),
                 IconButton(
@@ -486,6 +500,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                     );
                   },
                 ),
+                if (widget.localeProvider != null)
+                  LanguageToggle(provider: widget.localeProvider!),
                 IconButton(
                   icon: const Icon(Icons.logout_outlined),
                   tooltip: 'Sign out',
@@ -510,8 +526,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                     Expanded(
                       child: Text(
                         _selectedIds.isEmpty
-                            ? 'Select designs to delete'
-                            : '${_selectedIds.length} of ${_designs.length} selected',
+                            ? l10n.selectDesignsToDeleteBottom
+                            : l10n.countOfTotalSelected(_selectedIds.length, _designs.length),
                         style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                       ),
                     ),
@@ -522,7 +538,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           ? null
                           : _deleteSelectedDesigns,
                       icon: const Icon(Icons.delete_outline, size: 18),
-                      label: Text('Delete (${_selectedIds.length})'),
+                      label: Text(l10n.deleteCount(_selectedIds.length)),
                     ),
                   ],
                 ),
@@ -536,12 +552,13 @@ class _DashboardScreenState extends State<DashboardScreen>
               onPressed: _showUploadOptions,
               backgroundColor: AppColors.brand,
               icon: const Icon(Icons.add_photo_alternate_outlined),
-              label: const Text('Upload Design', style: TextStyle(fontWeight: FontWeight.bold)),
+              label: Text(l10n.uploadDesign, style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
     );
   }
 
   Widget _buildBody() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       children: [
         if (_pendingQueue.isNotEmpty)
@@ -555,7 +572,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    '${_pendingQueue.length} upload(s) pending in offline queue.',
+                    l10n.uploadsPending(_pendingQueue.length),
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.amberAccent),
                   ),
                 ),
@@ -567,7 +584,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       )
                     : TextButton(
                         onPressed: _syncPendingUploads,
-                        child: const Text('Sync now', style: TextStyle(fontSize: 12, color: Colors.amberAccent)),
+                        child: Text(l10n.syncNow, style: const TextStyle(fontSize: 12, color: Colors.amberAccent)),
                       ),
               ],
             ),
@@ -647,6 +664,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildContent() {
+    final l10n = AppLocalizations.of(context);
     if (_loading) {
       return _buildSkeletonGrid();
     }
@@ -665,7 +683,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               FilledButton.icon(
                 onPressed: _loadDesigns,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Try Again'),
+                label: Text(l10n.tryAgainBtn),
               ),
             ],
           ),
@@ -702,7 +720,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               FilledButton.icon(
                 onPressed: _showUploadOptions,
                 icon: const Icon(Icons.add),
-                label: const Text('Upload First Design'),
+                label: Text(l10n.uploadFirstDesign),
               ),
             ],
           ),
