@@ -29,6 +29,21 @@ android {
         versionName = flutter.versionName
     }
 
+    applicationVariants.all {
+        val variant = this
+        outputs.forEach { output ->
+            if (output is com.android.build.gradle.internal.api.BaseVariantOutputImpl) {
+                val currentName = output.outputFileName
+                output.outputFileName = if (currentName.startsWith("app-")) {
+                    currentName.replaceFirst("app-", "DhalakCatalog-")
+                } else {
+                    "DhalakCatalog-${variant.name}.apk"
+                }
+            }
+        }
+    }
+
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.

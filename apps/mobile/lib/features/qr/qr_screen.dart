@@ -122,9 +122,11 @@ class QrScreen extends StatelessWidget {
               FilledButton.icon(
                 key: const Key('share_qr_btn'),
                 onPressed: () async {
-                  await Share.share(
-                    'Browse our full tailoring catalog and designs online at: $catalogUrl',
-                    subject: '${profile.shopName} Catalog',
+                  await SharePlus.instance.share(
+                    ShareParams(
+                      text: 'Browse our full tailoring catalog and designs online at: $catalogUrl',
+                      subject: '${profile.shopName} Catalog',
+                    ),
                   );
                 },
                 icon: const Icon(Icons.share_outlined),

@@ -24,7 +24,7 @@ class TailorApp extends StatelessWidget {
       listenable: provider,
       builder: (context, _) {
         return MaterialApp(
-          title: 'Tailor Catalog',
+          title: 'Dhalak Catalog',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.dark,
           locale: provider.locale,
