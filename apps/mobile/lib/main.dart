@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
 import 'core/config/app_config.dart';
+import 'core/locale/locale_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,5 +22,7 @@ Future<void> main() async {
     );
   }
 
-  runApp(const TailorApp());
+  final localeProvider = await LocaleProvider.create();
+
+  runApp(TailorApp(localeProvider: localeProvider));
 }

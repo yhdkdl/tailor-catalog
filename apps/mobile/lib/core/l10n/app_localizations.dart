@@ -287,7 +287,7 @@ abstract class AppLocalizations {
   /// No description provided for @takePhoto.
   ///
   /// In en, this message translates to:
-  /// **'Take a Photo'**
+  /// **'Take Photo'**
   String get takePhoto;
 
   /// No description provided for @retake.
@@ -313,6 +313,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copy Catalog Link'**
   String get copyCatalogLink;
+
+  /// No description provided for @shareCatalogLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Catalog Link'**
+  String get shareCatalogLink;
+
+  /// No description provided for @pointCameraToScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Point camera to scan'**
+  String get pointCameraToScan;
+
+  /// No description provided for @catalogUrlCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Catalog URL copied to clipboard!'**
+  String get catalogUrlCopied;
 
   /// No description provided for @syncNow.
   ///

@@ -107,7 +107,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chooseFromGallery => 'Choose from Gallery';
 
   @override
-  String get takePhoto => 'Take a Photo';
+  String get takePhoto => 'Take Photo';
 
   @override
   String get retake => 'Retake';
@@ -120,6 +120,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get copyCatalogLink => 'Copy Catalog Link';
+
+  @override
+  String get shareCatalogLink => 'Share Catalog Link';
+
+  @override
+  String get pointCameraToScan => 'Point camera to scan';
+
+  @override
+  String get catalogUrlCopied => 'Catalog URL copied to clipboard!';
 
   @override
   String get syncNow => 'Sync now';

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../auth/auth_repository.dart';
 import 'qr_service.dart';
 
@@ -18,11 +19,12 @@ class QrScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final catalogUrl = QrService.buildCatalogUrl(profile.shopSlug);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Store QR Code'),
+        title: Text(l10n.storeQrCode),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -95,7 +97,7 @@ class QrScreen extends StatelessWidget {
                         Icon(Icons.camera_alt_outlined, size: 16, color: Colors.grey.shade800),
                         const SizedBox(width: 6),
                         Text(
-                          'Point camera to scan',
+                          l10n.pointCameraToScan,
                           style: TextStyle(
                             color: Colors.grey.shade800,
                             fontSize: 12,
@@ -126,9 +128,9 @@ class QrScreen extends StatelessWidget {
                   );
                 },
                 icon: const Icon(Icons.share_outlined),
-                label: const Text(
-                  'Share Catalog Link',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                label: Text(
+                  l10n.shareCatalogLink,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -143,14 +145,14 @@ class QrScreen extends StatelessWidget {
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: catalogUrl));
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Catalog URL copied to clipboard!'),
+                    SnackBar(
+                      content: Text(l10n.catalogUrlCopied),
                       backgroundColor: Colors.green,
                     ),
                   );
                 },
                 icon: const Icon(Icons.copy_outlined),
-                label: const Text('Copy Catalog Link'),
+                label: Text(l10n.copyCatalogLink),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   side: const BorderSide(color: Colors.white24),

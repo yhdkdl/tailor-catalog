@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../auth/auth_repository.dart';
 import 'design_repository.dart';
@@ -95,9 +96,10 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
 
   void _removeExistingPhoto(int index) {
     if (_existingPhotos.length + _newPhotos.length <= 1) {
+      final l10n = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('A design must have at least one photo.'),
+        SnackBar(
+          content: Text(l10n.selectAtLeastOnePhoto),
           backgroundColor: Colors.orangeAccent,
         ),
       );
@@ -117,9 +119,10 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
 
   void _removeNewPhoto(int index) {
     if (_existingPhotos.length + _newPhotos.length <= 1) {
+      final l10n = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('A design must have at least one photo.'),
+        SnackBar(
+          content: Text(l10n.selectAtLeastOnePhoto),
           backgroundColor: Colors.orangeAccent,
         ),
       );
@@ -179,6 +182,7 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
   }
 
   void _showAddPhotoSheet() {
+    final l10n = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
@@ -190,7 +194,7 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_library_outlined, color: AppColors.brand),
-              title: const Text('Choose from Gallery'),
+              title: Text(l10n.chooseFromGallery),
               onTap: () {
                 Navigator.of(ctx).pop();
                 _pickFromGallery();
@@ -198,7 +202,7 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt_outlined, color: AppColors.brand),
-              title: const Text('Take a Photo'),
+              title: Text(l10n.takePhoto),
               onTap: () {
                 Navigator.of(ctx).pop();
                 _pickFromCamera();
@@ -263,11 +267,13 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final langCode = Localizations.localeOf(context).languageCode;
     final totalPhotosCount = _existingPhotos.length + _newPhotos.length;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Design', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(l10n.editDesign, style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: _loadingCategories
           ? const Center(child: CircularProgressIndicator())
@@ -300,8 +306,8 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
                             children: [
                               Text(
                                 widget.design.isGrouped
-                                    ? 'Grouped Carousel ($totalPhotosCount photos)'
-                                    : 'Single Photo Design',
+                                    ? '${l10n.groupedCarousel} ($totalPhotosCount)'
+                                    : l10n.singlePhotoDesign,
                                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                               ),
                               const SizedBox(height: 2),
@@ -319,7 +325,7 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
                   const SizedBox(height: 20),
 
                   // Category Dropdown
-                  const Text('Category', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text(l10n.category, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     initialValue: _selectedCategoryId,
@@ -334,7 +340,7 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
                     items: _categories.map((c) {
                       return DropdownMenuItem<String>(
                         value: c.id,
-                        child: Text(c.localizedName),
+                        child: Text(c.nameForLocale(langCode)),
                       );
                     }).toList(),
                     onChanged: (val) {
@@ -347,12 +353,12 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
                   const SizedBox(height: 20),
 
                   // Tag Field
-                  const Text('Tag / Title (Optional)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text(l10n.tagOptional, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _tagController,
                     decoration: InputDecoration(
-                      hintText: 'e.g. Habesha Kemis, Wedding Silk',
+                      hintText: l10n.tagHint,
                       filled: true,
                       fillColor: AppColors.surface,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white12)),
@@ -368,13 +374,13 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Design Photos ($totalPhotosCount)',
+                        '${l10n.addPhotos} ($totalPhotosCount)',
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       TextButton.icon(
                         onPressed: _saving ? null : _showAddPhotoSheet,
                         icon: const Icon(Icons.add_photo_alternate_outlined, size: 18, color: AppColors.brand),
-                        label: const Text('Add Photos', style: TextStyle(color: AppColors.brand, fontWeight: FontWeight.bold, fontSize: 13)),
+                        label: Text(l10n.addPhotos, style: const TextStyle(color: AppColors.brand, fontWeight: FontWeight.bold, fontSize: 13)),
                       ),
                     ],
                   ),
@@ -464,9 +470,9 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
                                       color: AppColors.brand,
                                       borderRadius: BorderRadius.circular(4),
                                     ),
-                                    child: const Text(
-                                      'Cover',
-                                      style: TextStyle(
+                                    child: Text(
+                                      l10n.cover,
+                                      style: const TextStyle(
                                         fontSize: 9,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.black,
@@ -581,9 +587,9 @@ class _EditDesignScreenState extends State<EditDesignScreen> {
                               height: 22,
                               child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.black),
                             )
-                          : const Text(
-                              'Save Changes',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          : Text(
+                              l10n.save,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                             ),
                     ),
                   ),

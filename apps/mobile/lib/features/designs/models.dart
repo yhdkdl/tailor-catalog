@@ -29,6 +29,11 @@ class CategoryItem {
   }
 
   String get localizedName => nameEn.isNotEmpty ? nameEn : nameAm;
+
+  String nameForLocale(String? languageCode) {
+    if (languageCode == 'am' && nameAm.isNotEmpty) return nameAm;
+    return nameEn.isNotEmpty ? nameEn : nameAm;
+  }
 }
 
 class DesignPhotoItem {

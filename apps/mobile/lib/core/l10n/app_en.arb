@@ -94,7 +94,7 @@
   "chooseFromGallery": "Choose from Gallery",
   "@chooseFromGallery": {},
 
-  "takePhoto": "Take a Photo",
+  "takePhoto": "Take Photo",
   "@takePhoto": {},
 
   "retake": "Retake",
@@ -108,6 +108,15 @@
 
   "copyCatalogLink": "Copy Catalog Link",
   "@copyCatalogLink": {},
+
+  "shareCatalogLink": "Share Catalog Link",
+  "@shareCatalogLink": {},
+
+  "pointCameraToScan": "Point camera to scan",
+  "@pointCameraToScan": {},
+
+  "catalogUrlCopied": "Catalog URL copied to clipboard!",
+  "@catalogUrlCopied": {},
 
   "syncNow": "Sync now",
   "@syncNow": {},

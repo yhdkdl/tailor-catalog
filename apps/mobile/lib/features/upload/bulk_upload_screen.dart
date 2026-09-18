@@ -67,7 +67,6 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
   }
 
   Future<void> _loadCategories() async {
-    final l10n = AppLocalizations.of(context);
     try {
       final categories = await widget.designRepository.getCategories();
       if (mounted) {
@@ -81,6 +80,7 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         setState(() {
           _loadingCategories = false;
           _errorMessage = '${l10n.failedToLoadCategories}: $e';

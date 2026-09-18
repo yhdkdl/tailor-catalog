@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/app_localizations.dart';
+import '../../core/locale/language_toggle.dart';
+import '../../core/locale/locale_provider.dart';
 import '../../core/theme/app_theme.dart';
 import 'auth_repository.dart';
 
 class AuthScreen extends StatefulWidget {
-  const AuthScreen({required this.repository, super.key});
+  const AuthScreen({
+    required this.repository,
+    this.localeProvider,
+    super.key,
+  });
 
   final AuthRepository repository;
+  final LocaleProvider? localeProvider;
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -62,7 +70,20 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
+      appBar: widget.localeProvider != null
+          ? AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: LanguageToggle(provider: widget.localeProvider!),
+                ),
+              ],
+            )
+          : null,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -74,9 +95,9 @@ class _AuthScreenState extends State<AuthScreen> {
                 children: [
                   const Icon(Icons.content_cut_rounded, size: 48, color: AppColors.brand),
                   const SizedBox(height: 24),
-                  Text('Tailor sign in', style: Theme.of(context).textTheme.headlineMedium),
+                  Text(l10n.signInTitle, style: Theme.of(context).textTheme.headlineMedium),
                   const SizedBox(height: 8),
-                  const Text('Sign in to manage your design catalog.'),
+                  Text(l10n.signInSubtitle),
                   const SizedBox(height: 28),
                   TextField(
                     key: const Key('email_field'),
@@ -84,7 +105,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     enabled: !loading,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(labelText: 'Email address'),
+                    decoration: InputDecoration(labelText: l10n.email),
                   ),
                   const SizedBox(height: 16),
                   TextField(
@@ -95,7 +116,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => submit(),
                     decoration: InputDecoration(
-                      labelText: 'Password',
+                      labelText: l10n.password,
                       suffixIcon: IconButton(
                         icon: Icon(obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
                         onPressed: () => setState(() => obscurePassword = !obscurePassword),
@@ -116,7 +137,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             width: 18,
                             child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                           )
-                        : const Text('Sign in'),
+                        : Text(l10n.signIn),
                   ),
                   const SizedBox(height: 20),
                   const Text(

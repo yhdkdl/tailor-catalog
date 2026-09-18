@@ -112,10 +112,19 @@ class AppLocalizationsAm extends AppLocalizations {
   String get useThisPhoto => 'ይህን ፎቶ ተጠቀም';
 
   @override
-  String get storeQrCode => 'የ QR ኮድ መደብ';
+  String get storeQrCode => 'የሱቅ QR ኮድ';
 
   @override
   String get copyCatalogLink => 'የካታሎግ ሊንክ ቅዳ';
+
+  @override
+  String get shareCatalogLink => 'የካታሎግ ሊንክ አጋራ';
+
+  @override
+  String get pointCameraToScan => 'ለመቃኘት ካሜራውን ያነጣጥሩ';
+
+  @override
+  String get catalogUrlCopied => 'የካታሎግ ዩአርኤል ወደ ቅንጥብ ሰሌዳ ተቀድቷል!';
 
   @override
   String get syncNow => 'አሁን አመሳስለ';

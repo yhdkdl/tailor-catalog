@@ -101,5 +101,10 @@
   "selectDesignsToDeleteBottom": "ለማጥፋት ዲዛይኖችን ምረጡ",
   "countOfTotalSelected": "{count} ከ {total} ተመርጧል",
   "uploadsPending": "{count} ጫን በኦፍላይን ወረፋ በመጠባበቅ ነው።",
-  "designUpdatedSuccessfully": "ዲዛይን በተሳካ ሁኔታ ተስተካክሏል"
+  "designUpdatedSuccessfully": "ዲዛይን በተሳካ ሁኔታ ተስተካክሏል",
+  "storeQrCode": "የሱቅ QR ኮድ",
+  "copyCatalogLink": "የካታሎግ ሊንክ ቅዳ",
+  "shareCatalogLink": "የካታሎግ ሊንክ አጋራ",
+  "pointCameraToScan": "ለመቃኘት ካሜራውን ያነጣጥሩ",
+  "catalogUrlCopied": "የካታሎግ ዩአርኤል ወደ ቅንጥብ ሰሌዳ ተቀድቷል!"
 }

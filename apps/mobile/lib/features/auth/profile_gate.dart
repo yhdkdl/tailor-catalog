@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/app_localizations.dart';
+import '../../core/locale/locale_provider.dart';
 import '../designs/dashboard_screen.dart';
 import '../designs/design_repository.dart';
 import 'auth_repository.dart';
@@ -10,11 +12,13 @@ import 'auth_screen.dart';
 class ProfileGate extends StatefulWidget {
   const ProfileGate({
     required this.repository,
+    this.localeProvider,
     this.designRepository,
     super.key,
   });
 
   final AuthRepository repository;
+  final LocaleProvider? localeProvider;
   final DesignRepository? designRepository;
 
   @override
@@ -68,9 +72,13 @@ class _ProfileGateState extends State<ProfileGate> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final session = widget.repository.currentSession;
     if (session == null) {
-      return AuthScreen(repository: widget.repository);
+      return AuthScreen(
+        repository: widget.repository,
+        localeProvider: widget.localeProvider,
+      );
     }
     if (profile == null) {
       return Scaffold(
@@ -93,12 +101,12 @@ class _ProfileGateState extends State<ProfileGate> {
                       FilledButton.icon(
                         onPressed: loadProfile,
                         icon: const Icon(Icons.refresh),
-                        label: const Text('Try again'),
+                        label: Text(l10n.tryAgain),
                       ),
                       const SizedBox(height: 8),
                       TextButton(
                         onPressed: widget.repository.signOut,
-                        child: const Text('Sign out'),
+                        child: Text(l10n.signOut),
                       ),
                     ],
                   ),
@@ -124,6 +132,7 @@ class _ProfileGateState extends State<ProfileGate> {
           profile: profile!,
           designRepository: repo,
           onSignOut: widget.repository.signOut,
+          localeProvider: widget.localeProvider,
         );
       default:
         return Scaffold(body: Center(child: Text('Unknown account status: ${profile!.status}')));
@@ -157,6 +166,7 @@ class _PendingApprovalScreenState extends State<_PendingApprovalScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -168,20 +178,17 @@ class _PendingApprovalScreenState extends State<_PendingApprovalScreen> {
               const SizedBox(height: 20),
               Text(widget.shopName, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center),
               const SizedBox(height: 12),
-              const Text(
-                'Your account is pending approval. Please wait for the administrator to review and approve your account.',
-                textAlign: TextAlign.center,
-              ),
+              Text(l10n.pendingApprovalBody, textAlign: TextAlign.center),
               const SizedBox(height: 28),
               FilledButton.icon(
                 onPressed: refreshing ? null : refresh,
                 icon: refreshing
                     ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
                     : const Icon(Icons.refresh),
-                label: const Text('Refresh status'),
+                label: Text(l10n.refreshStatus),
               ),
               const Spacer(),
-              TextButton(onPressed: widget.onSignOut, child: const Text('Sign out')),
+              TextButton(onPressed: widget.onSignOut, child: Text(l10n.signOut)),
             ],
           ),
         ),
@@ -197,6 +204,7 @@ class _RejectedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -206,14 +214,11 @@ class _RejectedScreen extends StatelessWidget {
               const Spacer(),
               const Icon(Icons.cancel_outlined, size: 56),
               const SizedBox(height: 20),
-              Text('Account not approved', style: Theme.of(context).textTheme.headlineSmall),
+              Text(l10n.accountNotApproved, style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 12),
-              const Text(
-                'Your account application was not approved. Please contact the administrator for more information.',
-                textAlign: TextAlign.center,
-              ),
+              Text(l10n.rejectedBody, textAlign: TextAlign.center),
               const Spacer(),
-              TextButton(onPressed: onSignOut, child: const Text('Sign out')),
+              TextButton(onPressed: onSignOut, child: Text(l10n.signOut)),
             ],
           ),
         ),
