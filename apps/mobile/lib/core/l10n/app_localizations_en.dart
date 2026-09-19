@@ -377,4 +377,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get genericError => 'Something went wrong. Please try again.';
+
+  @override
+  String get allCategories => 'All';
+
+  @override
+  String get noDesignsInCategory => 'No designs found in this category';
+
+  @override
+  String get showAll => 'Show All';
 }

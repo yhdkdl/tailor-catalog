@@ -751,6 +751,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong. Please try again.'**
   String get genericError;
+
+  /// No description provided for @allCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get allCategories;
+
+  /// No description provided for @noDesignsInCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'No designs found in this category'**
+  String get noDesignsInCategory;
+
+  /// No description provided for @showAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show All'**
+  String get showAll;
 }
 
 class _AppLocalizationsDelegate

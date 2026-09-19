@@ -400,6 +400,15 @@
   "@serverError": {},
 
   "genericError": "Something went wrong. Please try again.",
-  "@genericError": {}
+  "@genericError": {},
+
+  "allCategories": "All",
+  "@allCategories": {},
+
+  "noDesignsInCategory": "No designs found in this category",
+  "@noDesignsInCategory": {},
+
+  "showAll": "Show All",
+  "@showAll": {}
 }
 

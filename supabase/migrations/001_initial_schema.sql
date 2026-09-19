@@ -42,11 +42,11 @@ create index idx_tailors_shop_slug on tailors(shop_slug);
 create index idx_tailors_status on tailors(status);
 insert into categories (name_en, name_am, name_om, name_so, sort_order) values
   ('Women''s Dress',     'የሴቶች ልብስ',      'Uffata Dubartoota',  'Dhar Dumarku',    1),
-  ('Men''s Suit',        'የወንዶች ልብስ',      'Uffata Dhiirota',    'Dhar Ragga',      2),
+  ('Couples',            'የጥንዶች ልብስ',      'Uffata Jaalalloo',   'Dhar Lamaan',     2),
   ('Traditional Attire', 'ባህላዊ ልብስ',       'Uffata Aadaa',       'Dharka Dhaqanka', 3),
   ('Children''s Wear',   'የልጆች ልብስ',      'Uffata Daa''imman',  'Dhar Caruurta',   4),
-  ('Casual',             'መደበኛ ልብስ',      'Uffata Guyyaa',      'Dhar Maalin',     5),
-  ('Formal',             'ሥርዓታዊ ልብስ',     'Uffata Simannaa',    'Dhar Rasmiga',    6);
+  ('Satin',              'ሳቲን',             'Satiin',             'Satiin',          5),
+  ('Abaya',              'አባያ',             'Abaayaa',            'Cabaayad',        6);
   create or replace function handle_updated_at()
 returns trigger as $$
 begin

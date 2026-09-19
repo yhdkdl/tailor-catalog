@@ -372,4 +372,13 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get genericError => 'ስህተት ተፈጥሯል። እባክዎ እንደገና ይሞክሩ።';
+
+  @override
+  String get allCategories => 'ሁሉም';
+
+  @override
+  String get noDesignsInCategory => 'በዚህ ምድብ ውስጥ ምንም ዲዛይን አልተገኘም';
+
+  @override
+  String get showAll => 'ሁሉንም አሳይ';
 }

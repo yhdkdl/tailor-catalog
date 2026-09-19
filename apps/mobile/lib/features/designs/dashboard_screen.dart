@@ -45,6 +45,8 @@ class _DashboardScreenState extends State<DashboardScreen>
   late final OfflineSyncManager _syncManager;
   List<DesignItem> _designs = [];
   List<QueuedUploadItem> _pendingQueue = [];
+  List<CategoryItem> _categories = [];
+  String? _selectedCategoryId;
   bool _loading = true;
   bool _isSyncing = false;
   String? _error;
@@ -98,10 +100,17 @@ class _DashboardScreenState extends State<DashboardScreen>
     try {
       final list = await _syncManager.getTailorDesigns(widget.profile.id);
       final queue = await _syncManager.getPendingUploads();
+      List<CategoryItem> cats = _categories;
+      try {
+        cats = await widget.designRepository.getCategories();
+      } catch (catErr) {
+        debugPrint('[DASHBOARD] Could not load categories: $catErr');
+      }
       if (mounted) {
         setState(() {
           _designs = list;
           _pendingQueue = queue;
+          _categories = cats;
           _loading = false;
           // Clean up any selected ids no longer in the list
           _selectedIds.retainWhere((id) => list.any((d) => d.id == id));
@@ -742,37 +751,171 @@ class _DashboardScreenState extends State<DashboardScreen>
       );
     }
 
-    return GridView.builder(
-      addAutomaticKeepAlives: true,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.68,
-        crossAxisSpacing: 14,
-        mainAxisSpacing: 14,
+    final filteredDesigns = _selectedCategoryId == null
+        ? _designs
+        : _designs.where((d) => d.categoryId == _selectedCategoryId).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_categories.isNotEmpty)
+          _buildCategoryFilterBar(Localizations.localeOf(context).languageCode),
+        Expanded(
+          child: filteredDesigns.isEmpty
+              ? _buildEmptyCategoryView(l10n)
+              : GridView.builder(
+                  addAutomaticKeepAlives: true,
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.68,
+                    crossAxisSpacing: 14,
+                    mainAxisSpacing: 14,
+                  ),
+                  itemCount: filteredDesigns.length,
+                  itemBuilder: (context, index) {
+                    final design = filteredDesigns[index];
+                    final isSelected = _selectedIds.contains(design.id);
+                    return _DesignCard(
+                      key: ValueKey('design_card_${design.id}'),
+                      design: design,
+                      isSelectionMode: _isSelectionMode,
+                      isSelected: isSelected,
+                      onToggleSelect: () => _toggleItemSelection(design.id),
+                      onLongPress: () {
+                        if (!_isSelectionMode) {
+                          setState(() {
+                            _isSelectionMode = true;
+                            _selectedIds.add(design.id);
+                          });
+                        }
+                      },
+                      onEdit: () => _editDesign(design),
+                      onDelete: () => _deleteDesign(design),
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategoryFilterBar(String langCode) {
+    final l10n = AppLocalizations.of(context);
+    return Container(
+      height: 44,
+      margin: const EdgeInsets.only(top: 8, bottom: 4),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: [
+          _buildFilterChip(
+            key: const Key('filter_chip_all'),
+            label: l10n.allCategories,
+            count: _designs.length,
+            isSelected: _selectedCategoryId == null,
+            onTap: () => setState(() => _selectedCategoryId = null),
+          ),
+          const SizedBox(width: 8),
+          ..._categories.map((cat) {
+            final isSelected = _selectedCategoryId == cat.id;
+            final count = _designs.where((d) => d.categoryId == cat.id).length;
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: _buildFilterChip(
+                key: Key('filter_chip_${cat.id}'),
+                label: cat.nameForLocale(langCode),
+                count: count,
+                isSelected: isSelected,
+                onTap: () => setState(() {
+                  _selectedCategoryId = isSelected ? null : cat.id;
+                }),
+              ),
+            );
+          }),
+        ],
       ),
-      itemCount: _designs.length,
-      itemBuilder: (context, index) {
-        final design = _designs[index];
-        final isSelected = _selectedIds.contains(design.id);
-        return _DesignCard(
-          key: ValueKey('design_card_${design.id}'),
-          design: design,
-          isSelectionMode: _isSelectionMode,
-          isSelected: isSelected,
-          onToggleSelect: () => _toggleItemSelection(design.id),
-          onLongPress: () {
-            if (!_isSelectionMode) {
-              setState(() {
-                _isSelectionMode = true;
-                _selectedIds.add(design.id);
-              });
-            }
-          },
-          onEdit: () => _editDesign(design),
-          onDelete: () => _deleteDesign(design),
-        );
-      },
+    );
+  }
+
+  Widget _buildFilterChip({
+    Key? key,
+    required String label,
+    required int count,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      key: key,
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFB87D0E) : const Color(0xFF242427),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFF59E0B) : const Color(0xFF333338),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : const Color(0xFFCBD5E1),
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.black.withValues(alpha: 0.25) : const Color(0xFF333338),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '$count',
+                style: TextStyle(
+                  color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyCategoryView(AppLocalizations l10n) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.filter_alt_off_outlined, size: 48, color: Color(0xFF71717A)),
+            const SizedBox(height: 14),
+            Text(
+              l10n.noDesignsInCategory,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 15),
+            ),
+            const SizedBox(height: 14),
+            TextButton.icon(
+              onPressed: () => setState(() => _selectedCategoryId = null),
+              icon: const Icon(Icons.clear_all),
+              label: Text(l10n.showAll),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

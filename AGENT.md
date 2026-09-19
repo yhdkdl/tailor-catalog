@@ -29,7 +29,7 @@
 - admin_users (id, auth_id, created_at)
 
 ## Categories Already Seeded (6 rows, all 4 languages)
-Women's Dress, Men's Suit, Traditional Attire, Children's Wear, Casual, Formal
+Women's Dress, Couples, Traditional Attire, Children's Wear, Satin, Abaya
 
 ## Storage Architecture
 ### Cloudinary (design photos)

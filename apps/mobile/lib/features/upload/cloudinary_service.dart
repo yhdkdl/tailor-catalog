@@ -75,8 +75,6 @@ class HttpCloudinaryService implements CloudinaryService {
     this.rateLimiter,
   });
 
-  static final UploadRateLimiter defaultRateLimiter = UploadRateLimiter();
-
   final http.Client? client;
   final UploadRateLimiter? rateLimiter;
 
@@ -87,7 +85,7 @@ class HttpCloudinaryService implements CloudinaryService {
     required String authUid,
     required String designId,
   }) async {
-    (rateLimiter ?? defaultRateLimiter).checkAndRecordUpload();
+    rateLimiter?.checkAndRecordUpload();
 
     final cloudName = AppConfig.cloudinaryCloudName;
     final uploadPreset = AppConfig.cloudinaryUploadPreset.trim();
