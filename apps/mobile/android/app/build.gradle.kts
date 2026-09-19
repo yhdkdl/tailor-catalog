@@ -4,6 +4,8 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+import java.io.File
+
 android {
     namespace = "com.tailorcatalog.tailor_catalog"
     compileSdk = flutter.compileSdkVersion
@@ -46,7 +48,7 @@ android {
                 val apkDir = project.layout.buildDirectory.dir("outputs/apk/${variant.name}").get().asFile
                 if (apkDir.exists()) {
                     apkDir.listFiles()?.filter { it.extension == "apk" }?.forEach { apkFile ->
-                        apkFile.copyTo(java.io.File(flutterApkDir, apkFile.name), overwrite = true)
+                        apkFile.copyTo(File(flutterApkDir, apkFile.name), overwrite = true)
                     }
                 }
             }
