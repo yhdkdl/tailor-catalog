@@ -351,4 +351,25 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get designUpdatedSuccessfully => 'ዲዛይን በተሳካ ሁኔታ ተስተካክሏል';
+
+  @override
+  String get appTagline => 'የእርስዎ ፋሽን። የእርስዎ ካታሎግ።';
+
+  @override
+  String get contactAdminReset => 'የይለፍ ቃል ለመቀየር አስተዳዳሪውን ያነጋግሩ';
+
+  @override
+  String get connectionError =>
+      'ከበይነመረብ ጋር መገናኘት አልተቻለም። እባክዎ ግንኙነትዎን ያረጋግጡና እንደገና ይሞክሩ።';
+
+  @override
+  String get invalidCredentials =>
+      'የተሳሳተ ኢሜይል ወይም የይለፍ ቃል ነው። እባክዎ እንደገና ይሞክሩ።';
+
+  @override
+  String get serverError =>
+      'አገልጋዩ ለጊዜው አልተገኘም። እባክዎ ከጥቂት ደቂቃዎች በኋላ እንደገና ይሞክሩ።';
+
+  @override
+  String get genericError => 'ስህተት ተፈጥሯል። እባክዎ እንደገና ይሞክሩ።';
 }

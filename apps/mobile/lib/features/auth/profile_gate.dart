@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../core/errors/error_utils.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/locale/locale_provider.dart';
 import '../designs/dashboard_screen.dart';
@@ -57,9 +58,16 @@ class _ProfileGateState extends State<ProfileGate> {
           error = null;
         });
       }
-    } catch (exception) {
+    } catch (exception, stackTrace) {
       if (mounted) {
-        setState(() => error = exception.toString());
+        final l10n = AppLocalizations.of(context);
+        final friendly = ErrorUtils.getFriendlyErrorMessage(
+          exception,
+          stackTrace: stackTrace,
+          contextTag: 'PROFILE_GATE',
+          l10n: l10n,
+        );
+        setState(() => error = friendly);
       }
     }
   }

@@ -715,6 +715,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Design updated successfully'**
   String get designUpdatedSuccessfully;
+
+  /// No description provided for @appTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Fashion. Your Catalog.'**
+  String get appTagline;
+
+  /// No description provided for @contactAdminReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact admin to reset password'**
+  String get contactAdminReset;
+
+  /// No description provided for @connectionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to connect. Please check your internet connection and try again.'**
+  String get connectionError;
+
+  /// No description provided for @invalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect email or password. Please try again.'**
+  String get invalidCredentials;
+
+  /// No description provided for @serverError.
+  ///
+  /// In en, this message translates to:
+  /// **'Our servers are temporarily unavailable. Please try again in a few moments.'**
+  String get serverError;
+
+  /// No description provided for @genericError.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get genericError;
 }
 
 class _AppLocalizationsDelegate

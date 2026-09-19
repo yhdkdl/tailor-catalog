@@ -382,5 +382,24 @@
   },
 
   "designUpdatedSuccessfully": "Design updated successfully",
-  "@designUpdatedSuccessfully": {}
+  "@designUpdatedSuccessfully": {},
+
+  "appTagline": "Your Fashion. Your Catalog.",
+  "@appTagline": {},
+
+  "contactAdminReset": "Contact admin to reset password",
+  "@contactAdminReset": {},
+
+  "connectionError": "Unable to connect. Please check your internet connection and try again.",
+  "@connectionError": {},
+
+  "invalidCredentials": "Incorrect email or password. Please try again.",
+  "@invalidCredentials": {},
+
+  "serverError": "Our servers are temporarily unavailable. Please try again in a few moments.",
+  "@serverError": {},
+
+  "genericError": "Something went wrong. Please try again.",
+  "@genericError": {}
 }
+

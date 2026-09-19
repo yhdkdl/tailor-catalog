@@ -106,5 +106,11 @@
   "copyCatalogLink": "የካታሎግ ሊንክ ቅዳ",
   "shareCatalogLink": "የካታሎግ ሊንክ አጋራ",
   "pointCameraToScan": "ለመቃኘት ካሜራውን ያነጣጥሩ",
-  "catalogUrlCopied": "የካታሎግ ዩአርኤል ወደ ቅንጥብ ሰሌዳ ተቀድቷል!"
+  "catalogUrlCopied": "የካታሎግ ዩአርኤል ወደ ቅንጥብ ሰሌዳ ተቀድቷል!",
+  "appTagline": "የእርስዎ ፋሽን። የእርስዎ ካታሎግ።",
+  "contactAdminReset": "የይለፍ ቃል ለመቀየር አስተዳዳሪውን ያነጋግሩ",
+  "connectionError": "ከበይነመረብ ጋር መገናኘት አልተቻለም። እባክዎ ግንኙነትዎን ያረጋግጡና እንደገና ይሞክሩ።",
+  "invalidCredentials": "የተሳሳተ ኢሜይል ወይም የይለፍ ቃል ነው። እባክዎ እንደገና ይሞክሩ።",
+  "serverError": "አገልጋዩ ለጊዜው አልተገኘም። እባክዎ ከጥቂት ደቂቃዎች በኋላ እንደገና ይሞክሩ።",
+  "genericError": "ስህተት ተፈጥሯል። እባክዎ እንደገና ይሞክሩ።"
 }

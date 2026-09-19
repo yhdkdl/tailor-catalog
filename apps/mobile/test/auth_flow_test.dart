@@ -102,7 +102,7 @@ void main() {
       // Verify app logo / icon and heading
       expect(find.byIcon(Icons.content_cut_rounded), findsOneWidget);
       expect(find.text('Tailor sign in'), findsOneWidget);
-      expect(find.text('Sign in to manage your design catalog.'), findsOneWidget);
+      expect(find.text('Your Fashion. Your Catalog.'), findsOneWidget);
 
       // Verify email and password text fields
       expect(find.byKey(const Key('email_field')), findsOneWidget);
@@ -120,7 +120,7 @@ void main() {
 
       // Verify admin help text
       expect(
-        find.text('Contact your administrator to reset your password.'),
+        find.text('Contact admin to reset password'),
         findsOneWidget,
       );
     });

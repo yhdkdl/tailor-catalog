@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:reorderables/reorderables.dart';
 
+import '../../core/errors/error_utils.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../auth/auth_repository.dart';
@@ -78,12 +79,18 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
           _loadingCategories = false;
         });
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (mounted) {
         final l10n = AppLocalizations.of(context);
+        final friendly = ErrorUtils.getFriendlyErrorMessage(
+          e,
+          stackTrace: stackTrace,
+          contextTag: 'BULK_LOAD_CATEGORIES',
+          l10n: l10n,
+        );
         setState(() {
           _loadingCategories = false;
-          _errorMessage = '${l10n.failedToLoadCategories}: $e';
+          _errorMessage = friendly;
         });
       }
     }
@@ -357,10 +364,17 @@ class _BulkUploadScreenState extends State<BulkUploadScreen> {
         );
         Navigator.of(context).pop(true);
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        final friendly = ErrorUtils.getFriendlyErrorMessage(
+          e,
+          stackTrace: stackTrace,
+          contextTag: 'BULK_UPLOAD_ALL',
+          l10n: l10n,
+        );
         setState(() {
-          _errorMessage = e.toString().replaceFirst('Exception: ', '');
+          _errorMessage = friendly;
           _uploading = false;
         });
       }

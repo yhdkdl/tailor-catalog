@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/errors/error_utils.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/locale/language_toggle.dart';
 import '../../core/locale/locale_provider.dart';
@@ -109,11 +110,18 @@ class _DashboardScreenState extends State<DashboardScreen>
           }
         });
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        final friendly = ErrorUtils.getFriendlyErrorMessage(
+          e,
+          stackTrace: stackTrace,
+          contextTag: 'DASHBOARD_LOAD',
+          l10n: l10n,
+        );
         setState(() {
           _loading = false;
-          _error = e.toString().replaceFirst('Exception: ', '');
+          _error = friendly;
         });
       }
     }
@@ -198,10 +206,16 @@ class _DashboardScreenState extends State<DashboardScreen>
             SnackBar(content: Text(l10n.designRemoved)),
           );
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
         if (mounted) {
+          final friendly = ErrorUtils.getFriendlyErrorMessage(
+            e,
+            stackTrace: stackTrace,
+            contextTag: 'DASHBOARD_DELETE',
+            l10n: l10n,
+          );
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${l10n.failedToDeleteDesign}: $e')),
+            SnackBar(content: Text('${l10n.failedToDeleteDesign}: $friendly')),
           );
         }
       }

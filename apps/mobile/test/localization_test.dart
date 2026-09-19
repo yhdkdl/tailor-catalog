@@ -87,7 +87,7 @@ void main() {
 
       // Initial English screen
       expect(find.text('Tailor sign in'), findsOneWidget);
-      expect(find.text('Sign in to manage your design catalog.'), findsOneWidget);
+      expect(find.text('Your Fashion. Your Catalog.'), findsOneWidget);
 
       // Tap language toggle
       await tester.tap(find.text('EN | አማ'));
@@ -99,7 +99,7 @@ void main() {
 
       // UI updates to Amharic
       expect(find.text('የጥለት ባለሙያ መግቢያ'), findsOneWidget);
-      expect(find.text('ዲዛይን ካታሎጅዎን ለማስተዳደር ይግቡ።'), findsOneWidget);
+      expect(find.text('የእርስዎ ፋሽን። የእርስዎ ካታሎግ።'), findsOneWidget);
     });
   });
 }

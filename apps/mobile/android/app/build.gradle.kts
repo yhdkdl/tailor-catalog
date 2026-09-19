@@ -33,11 +33,21 @@ android {
         val variant = this
         outputs.forEach { output ->
             if (output is com.android.build.gradle.internal.api.BaseVariantOutputImpl) {
-                val currentName = output.outputFileName
-                output.outputFileName = if (currentName.startsWith("app-")) {
-                    currentName.replaceFirst("app-", "DhalakCatalog-")
-                } else {
-                    "DhalakCatalog-${variant.name}.apk"
+                val abi = output.getFilter("ABI")
+                val abiSuffix = if (abi != null) "-$abi" else ""
+                val customName = "DhalakCatalog-v${variant.versionName}$abiSuffix.apk"
+                output.outputFileName = customName
+            }
+        }
+
+        assembleProvider.configure {
+            doLast {
+                val flutterApkDir = project.layout.buildDirectory.dir("outputs/flutter-apk").get().asFile
+                val apkDir = project.layout.buildDirectory.dir("outputs/apk/${variant.name}").get().asFile
+                if (apkDir.exists()) {
+                    apkDir.listFiles()?.filter { it.extension == "apk" }?.forEach { apkFile ->
+                        apkFile.copyTo(java.io.File(flutterApkDir, apkFile.name), overwrite = true)
+                    }
                 }
             }
         }

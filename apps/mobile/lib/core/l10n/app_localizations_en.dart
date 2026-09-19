@@ -356,4 +356,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get designUpdatedSuccessfully => 'Design updated successfully';
+
+  @override
+  String get appTagline => 'Your Fashion. Your Catalog.';
+
+  @override
+  String get contactAdminReset => 'Contact admin to reset password';
+
+  @override
+  String get connectionError =>
+      'Unable to connect. Please check your internet connection and try again.';
+
+  @override
+  String get invalidCredentials =>
+      'Incorrect email or password. Please try again.';
+
+  @override
+  String get serverError =>
+      'Our servers are temporarily unavailable. Please try again in a few moments.';
+
+  @override
+  String get genericError => 'Something went wrong. Please try again.';
 }
