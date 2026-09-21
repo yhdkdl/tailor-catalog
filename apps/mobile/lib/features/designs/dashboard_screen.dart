@@ -11,7 +11,6 @@ import '../offline/offline_service.dart';
 import '../offline/offline_sync_manager.dart';
 import '../qr/qr_screen.dart';
 import '../upload/bulk_upload_screen.dart';
-import '../upload/single_upload_screen.dart';
 import 'design_repository.dart';
 import 'edit_design_screen.dart';
 import 'models.dart';
@@ -337,6 +336,32 @@ class _DashboardScreenState extends State<DashboardScreen> with RouteAware {
     }
   }
 
+  void _showDesignViewer(DesignItem design) {
+    final photos = design.photos;
+    if (photos.isEmpty) return;
+
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            _DesignViewerScreen(design: design),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.easeOutCubic;
+
+          var tween = Tween(begin: begin, end: end).chain(
+            CurveTween(curve: curve),
+          );
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+
   void _showUploadOptions() {
     showModalBottomSheet(
       context: context,
@@ -374,16 +399,6 @@ class _DashboardScreenState extends State<DashboardScreen> with RouteAware {
                   ),
                   const SizedBox(height: 18),
                   _UploadOptionTile(
-                    icon: Icons.add_photo_alternate_outlined,
-                    title: l10n.singlePhotoDesign,
-                    subtitle: l10n.singlePhotoSubtitle,
-                    onTap: () {
-                      Navigator.of(ctx).pop();
-                      _navigateToSingleUpload();
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  _UploadOptionTile(
                     icon: Icons.photo_library_outlined,
                     title: l10n.bulkUpload,
                     subtitle: l10n.bulkUploadSubtitle,
@@ -400,23 +415,6 @@ class _DashboardScreenState extends State<DashboardScreen> with RouteAware {
         );
       },
     );
-  }
-
-  Future<void> _navigateToSingleUpload() async {
-    final created = await Navigator.of(context).push<DesignItem>(
-      MaterialPageRoute(
-        builder: (_) => SingleDesignUploadScreen(
-          tailorProfile: widget.profile,
-          designRepository: widget.designRepository,
-          authUid: widget.profile.authId,
-        ),
-      ),
-    );
-    if (created != null && mounted) {
-      setState(() {
-        _designs = [created, ..._designs];
-      });
-    }
   }
 
   Future<void> _navigateToBulkUpload() async {
@@ -942,6 +940,7 @@ class _DashboardScreenState extends State<DashboardScreen> with RouteAware {
               isSelectionMode: _isSelectionMode,
               isSelected: isSelected,
               onToggleSelect: () => _toggleItemSelection(design.id),
+              onTap: () => _showDesignViewer(design),
               onLongPress: () {
                 if (!_isSelectionMode) {
                   HapticFeedback.mediumImpact();
@@ -1507,6 +1506,7 @@ class _DesignCard extends StatefulWidget {
     this.isSelectionMode = false,
     this.isSelected = false,
     this.onToggleSelect,
+    this.onTap,
     this.onLongPress,
     super.key,
   });
@@ -1517,6 +1517,7 @@ class _DesignCard extends StatefulWidget {
   final bool isSelectionMode;
   final bool isSelected;
   final VoidCallback? onToggleSelect;
+  final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
   @override
@@ -1541,7 +1542,7 @@ class _DesignCardState extends State<_DesignCard>
         : '';
 
     return GestureDetector(
-      onTap: widget.isSelectionMode ? widget.onToggleSelect : null,
+      onTap: widget.isSelectionMode ? widget.onToggleSelect : widget.onTap,
       onLongPress: widget.onLongPress,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
@@ -1826,6 +1827,192 @@ class _CardActionButton extends StatelessWidget {
           ),
           child: Icon(icon, size: 16, color: iconColor),
         ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Design Viewer Screen
+// ─────────────────────────────────────────────────────────────
+
+class _DesignViewerScreen extends StatefulWidget {
+  const _DesignViewerScreen({
+    required this.design,
+  });
+
+  final DesignItem design;
+
+  @override
+  State<_DesignViewerScreen> createState() => _DesignViewerScreenState();
+}
+
+class _DesignViewerScreenState extends State<_DesignViewerScreen> {
+  late PageController _pageController;
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final photos = widget.design.photos;
+    if (photos.isEmpty) {
+      Navigator.of(context).pop();
+      return const SizedBox.shrink();
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        actions: [
+          if (widget.design.categoryName != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                  ),
+                  child: Text(
+                    widget.design.categoryName!,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          // Image viewer
+          PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+            itemCount: photos.length,
+            itemBuilder: (context, index) {
+              final photo = photos[index];
+              final imageUrl = photo.thumbnailOptimizedUrl.isNotEmpty
+                  ? photo.cloudinaryUrl // Use full image for viewer
+                  : photo.cloudinaryUrl;
+
+              return InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Center(
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.contain,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                              : null,
+                          color: Colors.white,
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Center(
+                        child: Icon(Icons.broken_image, color: Colors.white54, size: 48),
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+          // Photo indicator
+          if (photos.length > 1)
+            Positioned(
+              bottom: 40,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${_currentPage + 1}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        ' / ${photos.length}',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          // Tag display
+          if (widget.design.tag != null && widget.design.tag!.isNotEmpty)
+            Positioned(
+              bottom: photos.length > 1 ? 90 : 40,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '#${widget.design.tag}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
